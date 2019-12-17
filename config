@@ -1,0 +1,5 @@
+export SERVER_NAME='fengodchen_main'
+export DOCKER_NAME='fengodchen_apache_server'
+export DOCKER_VERSION='v1.0'
+export DOCKER_PORT=10
+export SMR_PATH=$(pwd)
