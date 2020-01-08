@@ -18,7 +18,7 @@ RUN ln -fs /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 RUN dpkg-reconfigure -f noninteractive tzdata
 
 # Install SQLite
-RUN apt install sqlite -y
+RUN apt install sqlite libsqlite3-dev -y
 
 # Set Share File
 RUN mkdir /Share
