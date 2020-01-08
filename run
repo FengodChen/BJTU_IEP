@@ -6,21 +6,54 @@ source config
 function help() {
     echo "usage: main.sh [<args>]"
     echo "args includes:"
-    echo "    start:    Start the Application"
-    echo "    stop:     Stop the Application"
-    echo "    install:  Install the Application"
-    echo "    help:     Get Help"
+    echo "    start:        Start the Application"
+    echo "    stop:         Stop the Application"
+    echo "    install:      Install the Application"
+    echo "    uninstall:    Uninstall the Application"
+    echo "    help:         Get Help"
+}
+
+function start() {
+    docker start ${SERVER_NAME}
+    docker start ${VI_NAME}
+}
+
+function stop() {
+    docker stop ${SERVER_NAME}
+    docker stop ${VI_NAME}
+}
+
+function install() {
+    docker build -t ${SERVER_DOCKER_NAME}:${SERVER_DOCKER_VERSION} App/Server/docker/ --rm \
+        && docker run -itd -p ${SERVER_DOCKER_PORT}:80 -v ${SMR_PATH}/Share:/Share -v ${SMR_PATH}/App/Server/html:/var/www/html --name ${SERVER_NAME} ${SERVER_DOCKER_NAME}:${SERVER_DOCKER_VERSION} \
+        && docker start ${SERVER_NAME}
+
+    docker build -t ${VI_DOCKER_NAME}:${VI_DOCKER_VERSION} App/Vehicle_Identification/docker/ --rm \
+        && docker run -itd -v ${SMR_PATH}/Share:/Share -v ${SMR_PATH}/App/Vehicle_Identification/YOLOv3:/YOLOv3 --name ${VI_NAME} ${VI_DOCKER_NAME}:${VI_DOCKER_VERSION} \
+        && docker start ${VI_NAME} \
+        && docker exec -it ${VI_NAME} make clean \
+        && docker exec -it ${VI_NAME} make
+}
+
+function uninstall() {
+    docker stop ${SERVER_NAME}
+    docker rm ${SERVER_NAME}
+    docker image rm ${SERVER_DOCKER_NAME}:${SERVER_DOCKER_VERSION}
+
+    docker stop ${VI_NAME}
+    docker rm ${VI_NAME}
+    docker image rm ${VI_DOCKER_NAME}:${VI_DOCKER_VERSION}
 }
 
 # [Shell]
 if [ "$1" = "start" ]; then
-    docker start ${SERVER_NAME}
+    start
 elif [ "$1" = "install" ]; then
-    docker build -t ${DOCKER_NAME}:${DOCKER_VERSION} App/Server/docker/ --rm \
-        && docker run -itd -p ${DOCKER_PORT}:80 -v ${SMR_PATH}/Share:/Share -v ${SMR_PATH}/App/Server/html:/var/www/html --name ${SERVER_NAME} ${DOCKER_NAME}:${DOCKER_VERSION} \
-        && docker start ${SERVER_NAME}
+    install
+elif [ "$1" = "uninstall" ]; then
+    uninstall
 elif [ "$1" = "stop" ]; then
-    docker stop ${SERVER_NAME}
+    stop
 elif [ "$1" = "help" ]; then
     help
 else

@@ -1,0 +1,7 @@
+#! /bin/bash
+
+# $1 means image file path
+
+#./darknet detect cfg/yolov3.cfg weights/yolov3.weights $1
+./darknet predict cfg/yolov3.cfg weights/yolov3.weights $1
+#./darknet predict cfg/yolov3-tiny.cfg weights/yolov3-tiny.weights $1
