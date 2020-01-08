@@ -317,7 +317,6 @@ void draw_detections(image im, detection *dets, int num, float thresh, char **na
 void get_detections(image im, detection *dets, int num, float thresh, char **names, image **alphabet, int classes, detection_data* ddata)
 {
     int i,j;
-    //ddata = malloc(num * sizeof(detection_data));
 
     for(i = 0; i < num; ++i){
         char labelstr[4096] = {0};

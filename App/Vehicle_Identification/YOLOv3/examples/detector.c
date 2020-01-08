@@ -659,11 +659,10 @@ void predict_detector(char *datacfg, char *cfgfile, char *weightfile, char *file
         printf("%s: Predicted in %f seconds.\n", input, what_time_is_it_now()-time);
         int nboxes = 0;
         detection *dets = get_network_boxes(net, im.w, im.h, thresh, hier_thresh, 0, 1, &nboxes);
-        //printf("%d\n", nboxes);
-        //if (nms) do_nms_obj(boxes, probs, l.w*l.h*l.n, l.classes, nms);
         if (nms) do_nms_sort(dets, nboxes, l.classes, nms);
         ddata = malloc(nboxes * sizeof(detection_data));
         get_detections(im, dets, nboxes, thresh, names, alphabet, l.classes, ddata);
+        SaveVehicleData("/Share/vehicle_data/location.db", ddata, nboxes);
         free_detections(dets, nboxes);
         if(outfile){
             save_image(im, outfile);
