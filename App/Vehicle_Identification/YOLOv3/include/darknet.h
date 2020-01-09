@@ -4,7 +4,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <pthread.h>
+#include <unistd.h>
 #include "sqlite_operation.h"
+
+#define SAVE_IMAGE 0
 
 #ifdef GPU
     #define BLOCK 512

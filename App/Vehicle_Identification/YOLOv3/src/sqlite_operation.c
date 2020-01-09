@@ -17,9 +17,22 @@ const char createFlagTable[] = "CREATE TABLE flag\
 const char insertFlagData[] = "INSERT INTO flag SELECT \"%s\", %d \
                                WHERE NOT EXISTS (SELECT * FROM flag WHERE name is \"%s\");";
 const char updateFlagData[] = "UPDATE flag SET flag = %d WHERE name = \"%s\";";
+const char getFlagData[] = "SELECT flag from flag WHERE name is \"%s\";";
 
 static int uselessCallback(void *NotUsed, int argc, char **argv, char **azColName) {
-        return 0;
+    return 0;
+}
+
+static int getFlagCallback(void *flag, int argc, char **argv, char **azColName) {
+    if (argc >= 1) {
+        if (strcmp(argv[0], "1") == 0)
+            *((int*)flag) = 1;
+        else
+            *((int*)flag) = 0;
+    } else {
+        *((int*)flag) = 0;
+    }
+    return 0;
 }
 
 int SqlTest() {
@@ -68,7 +81,17 @@ void saveVehicleData(const char* dataPath, detection_data *ddata, int ddataLen) 
 }
 
 int getVehicleFlag(const char* dataPath, const char* flagName) {
-    return 0;
+    int flag;
+    sqlite3 *db;
+    char* zErrMsg = 0;
+
+    sqlite3_open(dataPath, &db);
+
+    sprintf(buf, getFlagData, flagName);
+    sqlite3_exec(db, buf, getFlagCallback, (void*)(&flag), &zErrMsg);
+
+    sqlite3_close(db);
+    return flag;
 }
 
 void setVehicleFlag(const char* dataPath, const char* flagName, int flag) {
