@@ -662,7 +662,8 @@ void predict_detector(char *datacfg, char *cfgfile, char *weightfile, char *file
         if (nms) do_nms_sort(dets, nboxes, l.classes, nms);
         ddata = malloc(nboxes * sizeof(detection_data));
         get_detections(im, dets, nboxes, thresh, names, alphabet, l.classes, ddata);
-        SaveVehicleData("/Share/vehicle_data/location.db", ddata, nboxes);
+        saveVehicleData("/Share/vehicle_data/location.db", ddata, nboxes);
+        setVehicleFlag("/Share/vehicle_data/location.db", "isUpdate", 1);
         free_detections(dets, nboxes);
         if(outfile){
             save_image(im, outfile);

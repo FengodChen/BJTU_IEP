@@ -6,17 +6,6 @@
 #include <pthread.h>
 #include "sqlite_operation.h"
 
-#ifndef SB
-#define SB
-typedef struct detection_data{
-    char label[4096];
-    double left_normalize;
-    double right_normalize;
-    double top_normalize;
-    double bot_normalize;
-} detection_data;
-#endif
-
 #ifdef GPU
     #define BLOCK 512
 
@@ -536,6 +525,17 @@ typedef struct detection{
     float objectness;
     int sort_class;
 } detection;
+
+#ifndef DETECTION_DATA_FLAG
+#define DETECTION_DATA_FLAG
+typedef struct detection_data{
+    char label[4096];
+    double left_normalize;
+    double right_normalize;
+    double top_normalize;
+    double bot_normalize;
+} detection_data;
+#endif
 
 typedef struct matrix{
     int rows, cols;
