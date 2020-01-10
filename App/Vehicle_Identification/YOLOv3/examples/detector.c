@@ -638,7 +638,12 @@ void predict_detector(char *datacfg, char *cfgfile, char *weightfile, char *file
     int haveNewImageFlag;
     image im, sized;
     while(1){
+        do {
+            haveNewImageFlag = getVehicleFlag("/Share/vehicle_data/location.db", "haveNewImage");
+            sleep(1);
+        } while (haveNewImageFlag == 0);
         setVehicleFlag("/Share/vehicle_data/location.db", "haveNewImage", 0);
+
         strncpy(input, filename, 256);
         im = load_image_color(input,0,0);
         sized = letterbox_image(im, net->w, net->h);
@@ -671,10 +676,6 @@ void predict_detector(char *datacfg, char *cfgfile, char *weightfile, char *file
 
         free_image(im);
         free_image(sized);
-        do {
-            haveNewImageFlag = getVehicleFlag("/Share/vehicle_data/location.db", "haveNewImage");
-            sleep(1);
-        } while (haveNewImageFlag == 0);
     }
 }
 

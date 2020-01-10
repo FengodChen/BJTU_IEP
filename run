@@ -15,7 +15,8 @@ function help() {
 
 function start() {
     docker start ${SERVER_NAME}
-    docker start ${VI_NAME}
+    docker start ${VI_NAME} \
+        && docker exec -id ${VI_NAME} ./predict
 }
 
 function stop() {
@@ -32,7 +33,9 @@ function install() {
         && docker run -itd -v ${SMR_PATH}/Share:/Share -v ${SMR_PATH}/App/Vehicle_Identification/YOLOv3:/YOLOv3 --name ${VI_NAME} ${VI_DOCKER_NAME}:${VI_DOCKER_VERSION} \
         && docker start ${VI_NAME} \
         && docker exec -it ${VI_NAME} make clean \
-        && docker exec -it ${VI_NAME} make
+        && docker exec -it ${VI_NAME} make \
+        && docker exec -id ${VI_NAME} chmod a+x ./predict \
+        && docker exec -id ${VI_NAME} ./predict
 }
 
 function uninstall() {
