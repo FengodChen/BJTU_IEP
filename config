@@ -11,3 +11,8 @@ export SERVER_DOCKER_PORT=10
 export VI_NAME='fengodchen_vehicle_identification_app'
 export VI_DOCKER_NAME='fengodchen_vehicle_identification_image'
 export VI_DOCKER_VERSION='v1.0'
+
+# [Lane Line Recognition]
+export LLR_NAME='fengodchen_lane_line_recognition_app'
+export LLR_DOCKER_NAME='fengodchen_lane_line_recognition_image'
+export LLR_DOCKER_VERSION='v1.0'

@@ -1,5 +1,6 @@
 {
     "files.associations": {
         "image.h": "c"
-    }
+    },
+    "python.pythonPath": "/usr/local/bin/python3"
 }
