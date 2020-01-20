@@ -14,9 +14,7 @@ import Vehicle_Data
 import Vehicle_Generator
 treedb = Vehicle_Tree.TreeDB('/Share/Main_Data', 'tree.db')
 gen = Vehicle_Generator.Vehicle_Generator(treedb)
-gen.initData("NanJingRoad", "2020-01-20")
-idb = gen.treeDict["NanJingRoad"]["2020-01-20"]
-d = idb.getData("18:00:16")
+sum_dict = gen.getData_TimeRange("NanjingRoad", "2020-01-28", "12:00:00", "14:00:00")
 
 # Get Date Range
 import datetime

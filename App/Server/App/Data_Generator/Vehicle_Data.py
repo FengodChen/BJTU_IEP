@@ -12,6 +12,8 @@ class IndexDB:
         '''
         Initialize self.roadLine by reading Table Road.
         '''
+        if (self.initRoadLineFlag):
+            return
         if (self.hasTable("Road")):
             roadDict = self.getRoad()
             self.roadLine = [0] * len(roadDict)
@@ -107,8 +109,9 @@ class IndexDB:
         dataDict["Car"] = {}
         dataDict["Bus"] = {}
         dataDict["Truck"] = {}
-        if (not self.initRoadLineFlag):
-            self.initRoadLine()
+
+        self.initRoadLine()
+
         for roadFunc in self.roadLine:
             dataDict["Car"][roadFunc] = 0
             dataDict["Bus"][roadFunc] = 0
