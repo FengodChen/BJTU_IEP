@@ -6,6 +6,7 @@ class IndexDB:
         self.db_path = db_path
         self.db = sqlite3.connect(db_path)
         self.roadLine = None
+        self.initRoadLineFlag = False
     
     def initRoadLine(self):
         '''
@@ -16,6 +17,7 @@ class IndexDB:
             self.roadLine = [0] * len(roadDict)
             for index in roadDict:
                 self.roadLine[index] = roadDict[index]
+        self.initRoadLineFlag = True
     
     def hasTable(self, tableName):
         '''
@@ -67,7 +69,7 @@ class IndexDB:
             roadDict[int(road[0])] = road[1]
         return roadDict
     
-    def insertData(self, carList, busList, truckList, nowTime = None):
+    def insertData(self, carList, busList, truckList, nowTime = None, commitFlag = True):
         '''
         Insert vehicle number which is suit road function data
         '''
@@ -92,4 +94,44 @@ class IndexDB:
         self.db.execute(busDB)
         self.db.execute(truckDB)
 
-        self.db.commit()
+        if (commitFlag):
+            self.db.commit()
+    
+    def getData(self, s_time):
+        '''
+        IndexDB.getData(str) -> dict
+
+        Return dataDict[Vehicle_Type][Road_Function], type: int
+        '''
+        dataDict = {}
+        dataDict["Car"] = {}
+        dataDict["Bus"] = {}
+        dataDict["Truck"] = {}
+        if (not self.initRoadLineFlag):
+            self.initRoadLine()
+        for roadFunc in self.roadLine:
+            dataDict["Car"][roadFunc] = 0
+            dataDict["Bus"][roadFunc] = 0
+            dataDict["Truck"][roadFunc] = 0
+
+        carCursors = self.db.execute("SELECT * FROM Car WHERE TIME IS \"{}\"".format(s_time))
+        busCursors = self.db.execute("SELECT * FROM Bus WHERE TIME IS \"{}\"".format(s_time))
+        truckCursors = self.db.execute("SELECT * FROM Truck WHERE TIME IS \"{}\"".format(s_time))
+
+        for carCursor in carCursors:
+            r_ptr = 1
+            for roadFunc in self.roadLine:
+                dataDict["Car"][roadFunc] += int(carCursor[r_ptr])
+                r_ptr += 1
+        for busCursor in busCursors:
+            r_ptr = 1
+            for roadFunc in self.roadLine:
+                dataDict["Bus"][roadFunc] += int(busCursor[r_ptr])
+                r_ptr += 1
+        for truckCursor in truckCursors:
+            r_ptr = 1
+            for roadFunc in self.roadLine:
+                dataDict["Truck"][roadFunc] += int(truckCursor[r_ptr])
+                r_ptr += 1
+
+        return dataDict
