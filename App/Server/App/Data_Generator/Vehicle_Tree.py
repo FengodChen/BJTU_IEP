@@ -18,6 +18,13 @@ def getDate():
     string_time = time.strftime("%Y-%m-%d", time.localtime())
     return string_time
 
+def getTime():
+    '''
+    getTime(void) -> "HH:MM:SS"
+    '''
+    string_time = time.strftime("%H:%M:%S", time.localtime())
+    return string_time
+
 class TreeDB:
     def __init__(self, treePath, db_name):
         self.treePath = treePath
@@ -39,7 +46,7 @@ class TreeDB:
     
     def insertData(self, roadName, date):
         hash_data = str2sha256("{}{}".format(roadName, date))
-        if (not self.hasTable(roadName)):
+        if (not self.hasRoad(roadName)):
             self.createTable(roadName)
         self.db.execute("INSERT INTO {} VALUES (\"{}\", \"{}\");".format(roadName, date, hash_data))
         self.db.commit()
@@ -52,7 +59,7 @@ class TreeDB:
         self.db.execute("CREATE TABLE {}(DATE TEXT NOT NULL, FILENAME TEXT NOT NULL);".format(roadName))
         self.db.commit()
     
-    def hasTable(self, roadName):
+    def hasRoad(self, roadName):
         '''
         Judge if the table exist
         '''

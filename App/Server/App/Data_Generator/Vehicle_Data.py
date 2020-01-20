@@ -5,9 +5,22 @@ class IndexDB:
     def __init__(self, db_path):
         self.db_path = db_path
         self.db = sqlite3.connect(db_path)
+        self.roadLine = None
+    
+    def initRoadLine(self):
+        '''
+        Initialize self.roadLine by reading Table Road.
+        '''
+        if (self.hasTable("Road")):
+            roadDict = self.getRoad()
+            self.roadLine = [0] * len(roadDict)
+            for index in roadDict:
+                self.roadLine[index] = roadDict[index]
     
     def hasTable(self, tableName):
         '''
+        IndexDB.hasTable(str) -> boolean
+
         Judge if the table exist
         '''
         try:
@@ -53,3 +66,30 @@ class IndexDB:
         for road in roadList:
             roadDict[int(road[0])] = road[1]
         return roadDict
+    
+    def insertData(self, carList, busList, truckList, nowTime = None):
+        '''
+        Insert vehicle number which is suit road function data
+        '''
+        if (nowTime == None):
+            nowTime = time.strftime("%H:%M:%S", time.localtime())
+        busDB = "INSERT INTO Bus VALUES (\"{}\"".format(nowTime)
+        for tmp in busList:
+            busDB = "{}, {}".format(busDB, tmp)
+        busDB = "{});".format(busDB)
+
+        carDB = "INSERT INTO Car VALUES (\"{}\"".format(nowTime)
+        for tmp in carList:
+            carDB = "{}, {}".format(carDB, tmp)
+        carDB = "{});".format(carDB)
+
+        truckDB = "INSERT INTO Truck VALUES (\"{}\"".format(nowTime)
+        for tmp in truckList:
+            truckDB = "{}, {}".format(truckDB, tmp)
+        truckDB = "{});".format(truckDB)
+
+        self.db.execute(carDB)
+        self.db.execute(busDB)
+        self.db.execute(truckDB)
+
+        self.db.commit()
