@@ -7,6 +7,7 @@ class IndexDB:
         self.db_path = db_path
         self.db = sqlite3.connect(db_path)
         self.roadLine = None
+        self.vehicleClass = ['Car', 'Bus', 'Truck']
         self.initRoadLineFlag = False
     
     def initRoadLine(self):
@@ -177,23 +178,17 @@ class IndexDB:
         '''
         self.initRoadLine()
 
-        roadLineLen = len(self.roadLine)
-        dataArray = np.zeros((3, roadLineLen), dtype = np.int)
+        dataArray = np.zeros((len(self.vehicleClass), len(self.roadLine)), dtype = np.int)
 
-        #SELECT * FROM Car WHERE TIME BETWEEN '00:00:00' AND '00:02:32';
-        carCursors = self.db.execute("SELECT * FROM Car WHERE TIME BETWEEN \"{}\" AND \"{}\"".format(startTime, endTime))
-        busCursors = self.db.execute("SELECT * FROM Bus WHERE TIME BETWEEN \"{}\" AND \"{}\"".format(startTime, endTime))
-        truckCursors = self.db.execute("SELECT * FROM Truck WHERE TIME BETWEEN \"{}\" AND \"{}\"".format(startTime, endTime))
-
-        for carCursor in carCursors:
-            carArray = np.array(carCursor[1:], dtype = np.int)
-            dataArray[0] += carArray
-        for busCursor in busCursors:
-            busArray = np.array(busCursor[1:], dtype = np.int)
-            dataArray[1] += busArray
-        for truckCursor in truckCursors:
-            truckArray = np.array(truckCursor[1:], dtype = np.int)
-            dataArray[2] += truckArray
+        vehiclePtr = 0
+        for vehicleName in self.vehicleClass:
+            roadPtr = 0
+            for roadName in self.roadLine:
+                cursors = self.db.execute("SELECT sum({}) FROM {} WHERE TIME BETWEEN \"{}\" AND \"{}\"".format(roadName, vehicleName, startTime, endTime))
+                for cursor in cursors:
+                    dataArray[vehiclePtr][roadPtr] += cursor[0]
+                roadPtr += 1
+            vehiclePtr += 1
 
         return dataArray
     
