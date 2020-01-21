@@ -39,8 +39,12 @@ class TreeDB:
         '''
 
         try:
-            filename = self.db.execute("SELECT FILENAME FROM {} WHERE DATE IS \"{}\";".format(roadName, date)).fetchone()[0]
-            return "{}/{}/index.db".format(self.treePath, filename)
+            cursors = self.db.execute("SELECT FILENAME FROM {} WHERE DATE IS \"{}\";".format(roadName, date)).fetchone()
+            try:
+                filename = cursors[0]
+                return "{}/{}/index.db".format(self.treePath, filename)
+            except:
+                return "0"
         except sqlite3.OperationalError:
             return "0"
     
@@ -49,8 +53,8 @@ class TreeDB:
         if (not self.hasRoad(roadName)):
             self.createTable(roadName)
         self.db.execute("INSERT INTO {} VALUES (\"{}\", \"{}\");".format(roadName, date, hash_data))
-        self.db.commit()
         os.makedirs("{}/{}".format(self.treePath, hash_data))
+        self.db.commit()
 
     def createTable(self, roadName):
         '''

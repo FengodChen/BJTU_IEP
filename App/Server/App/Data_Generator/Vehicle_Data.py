@@ -10,11 +10,11 @@ class IndexDB:
         self.vehicleClass = ['Car', 'Bus', 'Truck']
         self.initRoadLineFlag = False
     
-    def initRoadLine(self):
+    def initRoadLine(self, force = False):
         '''
         Initialize self.roadLine by reading Table Road.
         '''
-        if (self.initRoadLineFlag):
+        if (self.initRoadLineFlag and not force):
             return
         if (self.hasTable("Road")):
             roadDict = self.getRoad()
@@ -184,7 +184,7 @@ class IndexDB:
         for vehicleName in self.vehicleClass:
             roadPtr = 0
             for roadName in self.roadLine:
-                cursors = self.db.execute("SELECT sum({}) FROM {} WHERE TIME BETWEEN \"{}\" AND \"{}\"".format(roadName, vehicleName, startTime, endTime))
+                cursors = self.db.execute("SELECT sum({}) FROM {} WHERE TIME BETWEEN \"{}\" AND \"{}\";".format(roadName, vehicleName, startTime, endTime))
                 for cursor in cursors:
                     dataArray[vehiclePtr][roadPtr] += cursor[0]
                 roadPtr += 1

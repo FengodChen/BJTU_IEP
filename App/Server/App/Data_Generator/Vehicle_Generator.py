@@ -71,6 +71,8 @@ class Vehicle_Generator:
         """
         Vehicle_Generator.getData_TimeRange(str, str, str, str) -> dict
 
+        Time Format:"HH:MM:SS"
+
         Return sum_dict[Vehicle_Type][Road_Function], type: int
         """
         if (not self.initData(roadName, date)):
@@ -99,6 +101,45 @@ class Vehicle_Generator:
             vehicle_ptr += 1
 
         return sum_dict
+    
+    def getData_DateRange(self, roadName, startDate, endDate, startTime, endTime):
+        """
+        Vehicle_Generator.getData_DateRange(str, str, str, str, str) -> dict
+
+        Date Format:"YYYY-MM-DD"
+
+        Time Format:"HH:MM:SS"
+
+        Return sum_dict[Date][Vehicle_Type][Road_Function], type: int
+        """
+        sum_dict = {}
+        dateList = getDateRange(startDate, endDate)
+        for date in dateList:
+            if (self.initData(roadName, date)):
+                sum_dict[date] = self.getData_TimeRange(roadName, date, startTime, endTime)
+        return sum_dict
+    
+    def insertData(self, roadName, date, time, vehicleArray, roadArray = None):
+        indexPath = self.treedb.findData(roadName, date)
+        if (indexPath == "0"):
+            self.treedb.insertData(roadName, date)
+
+        if (self.initData(roadName, date)):
+            indexDB = self.treeDict[roadName][date]
+            if (roadArray != None and roadArray != indexDB.roadLine):
+                indexDB.setRoad(roadArray)
+                indexDB.initRoadLine(force = True)
+            '''
+            for vehicle in vehicleArray:
+                if (len(vehicle) != len(indexDB.roadLine)):
+                    return False
+            '''
+            indexDB.insertData(vehicleArray[0], vehicleArray[1], vehicleArray[2], nowTime = time)
+            return True
+
+        return False
+
+
     
     def data2json(self, data):
         return json.dumps(data)
