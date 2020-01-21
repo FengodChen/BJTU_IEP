@@ -1,6 +1,7 @@
 import Vehicle_Data
 import Vehicle_Tree
 import Vehicle_Generator
+import random
 from random import randint
 import numpy as np
 
@@ -10,8 +11,8 @@ roadMaxNum = 3
 vehicleMaxNum = 10
 startDate = "2020-01-23"
 endDate = "2020-03-02"
-startTime = "12:00:00"
-endTime = "14:00:00"
+startTime = "00:00:00"
+endTime = "23:59:59"
 
 def randomRoad(roadNameList, maxNum):
     roadList = []
@@ -20,10 +21,11 @@ def randomRoad(roadNameList, maxNum):
             roadList.append("{}{}".format(road, i))
     return roadList
 
-def randomData(startDate, endDate, startTime, endTime, vehicle_num_max):
+def randomData(startDate, endDate, startTime, endTime, vehicle_num_max, time_sample = 15000):
     treedb = Vehicle_Tree.TreeDB('/Share/Main_Data', 'tree.db')
     dateList = Vehicle_Generator.getDateRange(startDate, endDate)
     timeList = Vehicle_Generator.getTimeRange(startTime, endTime)
+    timeList = random.sample(timeList, time_sample)
 
     for road in roadList:
         for date in dateList:

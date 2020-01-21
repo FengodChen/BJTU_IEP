@@ -1,5 +1,6 @@
 import sqlite3
 import time
+import numpy as np
 
 class IndexDB:
     def __init__(self, db_path):
@@ -98,13 +99,13 @@ class IndexDB:
 
         if (commitFlag):
             self.db.commit()
-    
+    '''
     def getData(self, s_time):
-        '''
+        ''''''
         IndexDB.getData(str) -> dict
 
         Return dataDict[Vehicle_Type][Road_Function], type: int
-        '''
+        ''''''
         dataDict = {}
         dataDict["Car"] = {}
         dataDict["Bus"] = {}
@@ -138,3 +139,61 @@ class IndexDB:
                 r_ptr += 1
 
         return dataDict
+    '''
+    def getData(self, s_time):
+        '''
+        IndexDB.getData(str) -> array
+
+        Return dataArray[Vehicle_Type][Road_Function], type: int
+        [Vehicle_Type] = ["Car", "Bus", "Truck"]
+        '''
+        self.initRoadLine()
+
+        roadLineLen = len(self.roadLine)
+        dataArray = np.zeros((3, roadLineLen), dtype = np.int)
+
+        carCursors = self.db.execute("SELECT * FROM Car WHERE TIME IS \"{}\"".format(s_time))
+        busCursors = self.db.execute("SELECT * FROM Bus WHERE TIME IS \"{}\"".format(s_time))
+        truckCursors = self.db.execute("SELECT * FROM Truck WHERE TIME IS \"{}\"".format(s_time))
+
+        for carCursor in carCursors:
+            carArray = np.array(carCursor[1:], dtype = np.int)
+            dataArray[0] += carArray
+        for busCursor in busCursors:
+            busArray = np.array(busCursor[1:], dtype = np.int)
+            dataArray[0] += busArray
+        for truckCursor in truckCursors:
+            truckArray = np.array(truckCursor[1:], dtype = np.int)
+            dataArray[0] += truckArray
+
+        return dataArray
+    
+    def getData_TimeRange(self, startTime, endTime):
+        '''
+        IndexDB.getData(str, str) -> array
+
+        Return dataArray[Vehicle_Type][Road_Function], type: int
+        [Vehicle_Type] = ["Car", "Bus", "Truck"]
+        '''
+        self.initRoadLine()
+
+        roadLineLen = len(self.roadLine)
+        dataArray = np.zeros((3, roadLineLen), dtype = np.int)
+
+        #SELECT * FROM Car WHERE TIME BETWEEN '00:00:00' AND '00:02:32';
+        carCursors = self.db.execute("SELECT * FROM Car WHERE TIME BETWEEN \"{}\" AND \"{}\"".format(startTime, endTime))
+        busCursors = self.db.execute("SELECT * FROM Bus WHERE TIME BETWEEN \"{}\" AND \"{}\"".format(startTime, endTime))
+        truckCursors = self.db.execute("SELECT * FROM Truck WHERE TIME BETWEEN \"{}\" AND \"{}\"".format(startTime, endTime))
+
+        for carCursor in carCursors:
+            carArray = np.array(carCursor[1:], dtype = np.int)
+            dataArray[0] += carArray
+        for busCursor in busCursors:
+            busArray = np.array(busCursor[1:], dtype = np.int)
+            dataArray[1] += busArray
+        for truckCursor in truckCursors:
+            truckArray = np.array(truckCursor[1:], dtype = np.int)
+            dataArray[2] += truckArray
+
+        return dataArray
+    

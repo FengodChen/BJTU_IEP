@@ -2,8 +2,9 @@ import Vehicle_Data
 import Vehicle_Tree
 import json
 import datetime
+import numpy as np
 
-def getDateRange(startDate, endDate):
+def getDateRange(startDate, endDate, dt = 1):
     dateList = []
 
     dateStart = datetime.datetime.strptime(startDate, '%Y-%m-%d')
@@ -11,11 +12,11 @@ def getDateRange(startDate, endDate):
      
     while (dateStart <= dateEnd):
         dateList.append(dateStart.strftime('%Y-%m-%d')) 
-        dateStart += datetime.timedelta(days=1)
+        dateStart += datetime.timedelta(days=dt)
     
     return dateList
 
-def getTimeRange(startTime, endTime):
+def getTimeRange(startTime, endTime, dt = 1):
     timeList = []
 
     timeStart = datetime.datetime.strptime(startTime, '%H:%M:%S')
@@ -23,7 +24,7 @@ def getTimeRange(startTime, endTime):
      
     while (timeStart <= timeEnd):
         timeList.append(timeStart.strftime('%H:%M:%S')) 
-        timeStart += datetime.timedelta(seconds=1)
+        timeStart += datetime.timedelta(seconds=dt)
     
     return timeList
 
@@ -76,6 +77,8 @@ class Vehicle_Generator:
             return None
         indexDB = self.treeDict[roadName][date]
         indexDB.initRoadLine()
+        sum_array = np.zeros((3, len(indexDB.roadLine)))
+
         sum_dict = {}
         sum_dict["Car"] = {}
         sum_dict["Bus"] = {}
@@ -84,12 +87,17 @@ class Vehicle_Generator:
             sum_dict["Car"][road] = 0
             sum_dict["Bus"][road] = 0
             sum_dict["Truck"][road] = 0
-        timeList = getTimeRange(startTime, endTime)
-        for time in timeList:
-            data_dict = indexDB.getData(time)
-            for vehicle_type in data_dict:
-                for road in data_dict[vehicle_type]:
-                    sum_dict[vehicle_type][road] += data_dict[vehicle_type][road]
+
+        sum_array = indexDB.getData_TimeRange(startTime, endTime)
+
+        vehicle_ptr = 0
+        for vehicle_type in sum_dict:
+            road_ptr = 0
+            for road in sum_dict[vehicle_type]:
+                sum_dict[vehicle_type][road] = sum_array[vehicle_ptr][road_ptr]
+                road_ptr += 1
+            vehicle_ptr += 1
+
         return sum_dict
     
     def data2json(self, data):
