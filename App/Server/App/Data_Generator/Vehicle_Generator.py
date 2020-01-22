@@ -96,7 +96,7 @@ class Vehicle_Generator:
         for vehicle_type in sum_dict:
             road_ptr = 0
             for road in sum_dict[vehicle_type]:
-                sum_dict[vehicle_type][road] = sum_array[vehicle_ptr][road_ptr]
+                sum_dict[vehicle_type][road] = int(sum_array[vehicle_ptr][road_ptr])
                 road_ptr += 1
             vehicle_ptr += 1
 
@@ -141,6 +141,12 @@ class Vehicle_Generator:
 
 
     
-    def data2json(self, data):
-        return json.dumps(data)
+    def data2json(self, data, filePath = None):
+        if (filePath == None):
+            return json.dumps(data)
+        else:
+            f = open(filePath, "w")
+            tmp = json.dump(data, f)
+            f.close()
+            return tmp
     
