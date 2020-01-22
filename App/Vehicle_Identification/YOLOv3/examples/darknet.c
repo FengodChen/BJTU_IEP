@@ -398,6 +398,10 @@ void visualize(char *cfgfile, char *weightfile)
     visualize_network(net);
 }
 
+int testPython(int a, int b) {
+    return a + b;
+}
+
 int main(int argc, char **argv)
 {
     //test_resize("data/bad.jpg");

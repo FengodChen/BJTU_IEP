@@ -12,6 +12,16 @@ RUN apt update -y
 # Install GCC and Make
 RUN apt install gcc g++ make -y
 
+# Install Python3 and Pip3
+RUN apt install python3 python3-pip libsm6 libxrender-dev libxext-dev -y
+
+RUN mkdir ~/.pip
+RUN echo "[global]" >> ~/.pip/pip.conf
+RUN echo "index-url = http://mirrors.aliyun.com/pypi/simple/" >> ~/.pip/pip.conf
+RUN echo "trusted-host = mirrors.aliyun.com" >> ~/.pip/pip.conf
+
+RUN pip3 install opencv-python==4.1.2.30 --user
+
 # Set Time Zone
 RUN apt install tzdata -y
 RUN ln -fs /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
