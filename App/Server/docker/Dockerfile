@@ -31,7 +31,7 @@ RUN pip3 install opencv-python==4.1.2.30 --user
 RUN apt install apache2 php7.2 libapache2-mod-php7.2 -y
 RUN echo "ServerName localhost:80" >> /etc/apache2/apache2.conf
 RUN echo "service apache2 start" >> /root/.bashrc
-RUN echo "export PYTHONPATH=/App/Data_Generator" >> /root/.bashrc
+RUN echo "export PYTHONPATH=/App/Data_Operator" >> /root/.bashrc
 
 # Install MySQL
 #RUN apt install mysql-client mysql-server -y
