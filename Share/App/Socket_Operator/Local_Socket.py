@@ -40,6 +40,7 @@ class Correspond:
         self.recv_addr = recv_addr
 
         self.sended = True
+        self.received = True
 
         self.conn = None
 
@@ -80,10 +81,11 @@ class Correspond:
             tt = bytes.decode(self.socket_r.recv(128))
             if ("Received" in tt):
                 self.sended = True
-                break
+                return True
             else:
                 print(tt)
-        return True
+                self.sended = True
+                return False
 
     def receive(self):
         if (self.recv_server_check and self.send_server_check):
