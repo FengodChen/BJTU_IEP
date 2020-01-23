@@ -24,17 +24,20 @@ class SendThread(threading.Thread):
         return "{}$$$$$".format(data)
 
 class Correspond:
-    def __init__(self, send_host, send_port, recv_host, recv_port):
-        self.send_port = send_port
-        self.recv_port = recv_port
+    def __init__(self, send_addr, recv_addr):
+        '''
+        Correspond(tulpe send_addr, tulpe recv_addr)
+
+        tulpe = (hostname, port)
+        '''
         #self.addr = 'localhost'
         self.send_thread = None
 
         self.send_server_check = False
         self.recv_server_check = False
 
-        self.send_addr = (send_host, send_port)
-        self.recv_addr = (recv_host, recv_port)
+        self.send_addr = send_addr
+        self.recv_addr = recv_addr
 
         self.sended = True
 
@@ -49,8 +52,8 @@ class Correspond:
             self.socket_s.listen(10)
             (conn, addr) = self.socket_s.accept()
             print ("Connect by {}".format(addr))
-            self.send_thread = SendThread(conn)
-            self.send_thread.start()
+            #self.send_thread = SendThread(conn)
+            #self.send_thread.start()
             self.conn = conn
             self.send_server_check = True
             return True
@@ -59,9 +62,9 @@ class Correspond:
             return False
 
     def start_receive_server(self):
-        self.socket_r.connect(self.recv_addr)
-        self.recv_server_check = True
         try:
+            self.socket_r.connect(self.recv_addr)
+            self.recv_server_check = True
             return True
         except Exception as e:
             print(e)
@@ -71,9 +74,10 @@ class Correspond:
         if (data == None or not self.sended or not self.send_server_check or not self.recv_server_check):
             return False
         self.sended = False
-        self.send_thread.send(data)
+        #self.send_thread.send(data)
+        self.conn.sendall(bytes(self.process_data(data), "utf-8"))
         while (True):
-            tt = bytes.decode(self.socket_r.recv(128))[:-5]
+            tt = bytes.decode(self.socket_r.recv(128))
             if ("Received" in tt):
                 self.sended = True
                 break
@@ -91,7 +95,7 @@ class Correspond:
                     break
             while (True):
                 if (self.sended):
-                    self.send_thread.send("Received")
+                    self.conn.sendall(bytes("Received", "utf-8"))
                     return str_data[:-5]
         else:
             return None
@@ -105,3 +109,6 @@ class Correspond:
         if (not self.socket_r == None):
             self.socket_r.shutdown(socket.SHUT_RD)
             self.socket_r.close()
+
+    def process_data(self, data):
+        return "{}$$$$$".format(data)
