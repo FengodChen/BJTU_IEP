@@ -20,7 +20,7 @@ darknet
 .fuse*
 libdarknet.a
 libdarknet.so
-libpython.so
+libyolo.so
 
 # OS Generated #
 .DS_Store*

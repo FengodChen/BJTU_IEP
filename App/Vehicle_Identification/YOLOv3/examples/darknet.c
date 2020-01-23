@@ -6,7 +6,7 @@
 
 extern void predict_classifier(char *datacfg, char *cfgfile, char *weightfile, char *filename, int top);
 extern void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filename, float thresh, float hier_thresh, char *outfile, int fullscreen);
-extern void predict_detector(char *datacfg, char *cfgfile, char *weightfile, char *filename, float thresh, float hier_thresh, char *outfile, int fullscreen);
+extern void predict_detector(char *datacfg, char *cfgfile, char *weightfile, char *filename, int* newImg_flag, int* hadYOLO_flag);
 extern void run_yolo(int argc, char **argv);
 extern void run_detector(int argc, char **argv);
 extern void run_coco(int argc, char **argv);
@@ -402,6 +402,26 @@ int testPython(int a, int b) {
     return a + b;
 }
 
+int predict_loop(int *newImg_Flag, int *hadYolo_flag) {
+    char path[] = "/Share/Images/main.jpg";
+    predict_detector("cfg/coco.data", "cfg/yolov3.cfg", "weights/yolov3.weights", path, newImg_Flag, hadYolo_flag);
+}
+
+int *getIntegerPoint(int value) {
+    int* tmp = (int*)malloc(sizeof(int));
+    *tmp = value;
+    return tmp;
+}
+
+int getIntegerValue(int *int_p) {
+    return *int_p;
+}
+
+void setIntegerValue(int *int_p, int value) {
+    *int_p = value;
+    return;
+}
+
 int main(int argc, char **argv)
 {
     //test_resize("data/bad.jpg");
@@ -440,12 +460,14 @@ int main(int argc, char **argv)
         char *outfile = find_char_arg(argc, argv, "-out", 0);
         int fullscreen = find_arg(argc, argv, "-fullscreen");
         test_detector("cfg/coco.data", argv[2], argv[3], filename, thresh, .5, outfile, fullscreen);
+    /*
     } else if (0 == strcmp(argv[1], "predict")){
         float thresh = find_float_arg(argc, argv, "-thresh", .5);
         char *filename = (argc > 4) ? argv[4]: 0;
         char *outfile = find_char_arg(argc, argv, "-out", 0);
         int fullscreen = find_arg(argc, argv, "-fullscreen");
         predict_detector("cfg/coco.data", argv[2], argv[3], filename, thresh, .5, outfile, fullscreen);
+    */
     } else if (0 == strcmp(argv[1], "cifar")){
         run_cifar(argc, argv);
     } else if (0 == strcmp(argv[1], "go")){

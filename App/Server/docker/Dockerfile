@@ -26,6 +26,7 @@ RUN echo "index-url = http://mirrors.aliyun.com/pypi/simple/" >> ~/.pip/pip.conf
 RUN echo "trusted-host = mirrors.aliyun.com" >> ~/.pip/pip.conf
 
 RUN pip3 install opencv-python==4.1.2.30 --user
+RUN pip3 install pandas==0.25.3 --user
 
 # Install and Configure Apache2
 RUN apt install apache2 php7.2 libapache2-mod-php7.2 -y

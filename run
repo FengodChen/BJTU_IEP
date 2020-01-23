@@ -15,8 +15,9 @@ function help() {
 
 function start() {
     docker start ${SERVER_NAME}
-    docker start ${VI_NAME} \
-        && docker exec -id ${VI_NAME} ./predict
+    #docker start ${VI_NAME} \
+    #    && docker exec -id ${VI_NAME} ./predict
+    docker start ${VI_NAME}
     docker start ${LLR_NAME}
 }
 
@@ -36,8 +37,8 @@ function install() {
         && docker start ${VI_NAME} \
         && docker exec -it ${VI_NAME} make clean \
         && docker exec -it ${VI_NAME} make \
-        && docker exec -id ${VI_NAME} chmod a+x ./predict \
-        && docker exec -id ${VI_NAME} ./predict
+        && docker exec -id ${VI_NAME} chmod a+x ./predict
+        #&& docker exec -id ${VI_NAME} ./predict
 
     docker build -t ${LLR_DOCKER_NAME}:${LLR_DOCKER_VERSION} App/Lane_Line_Recognition/docker --rm \
         && docker run -itd -v ${SMR_PATH}/Share:/Share -v ${SMR_PATH}/App/Lane_Line_Recognition/Hough:/Hough --name ${LLR_NAME} ${LLR_DOCKER_NAME}:${LLR_DOCKER_VERSION} \
