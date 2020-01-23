@@ -28,17 +28,22 @@ function stop() {
 }
 
 function install() {
+    docker network create -d bridge ${DOCKER_BRIDGE}
     docker build -t ${SEED_DOCKER_NAME}:${SEED_DOCKER_VERSION} ${SMR_PATH}/Docker/ --rm
     install_soft
 }
 
 function install_soft() {
     docker build -t ${SERVER_DOCKER_NAME}:${SERVER_DOCKER_VERSION} ${SMR_PATH}/App/Server/docker/ --rm \
-        && docker run -itd -p ${SERVER_DOCKER_PORT}:80 -v ${SMR_PATH}/Share:/Share -v ${SMR_PATH}/App/Server/html:/var/www/html -v ${SMR_PATH}/App/Server/App:/App --name ${SERVER_NAME} ${SERVER_DOCKER_NAME}:${SERVER_DOCKER_VERSION} \
+        && docker run -itd -v ${SMR_PATH}/Share:/Share -v ${SMR_PATH}/App/Server/html:/var/www/html -v ${SMR_PATH}/App/Server/App:/App -p 127.0.0.1:${SERVER_DOCKER_PORT}:80\
+            --network ${DOCKER_BRIDGE} \
+            --name ${SERVER_NAME} ${SERVER_DOCKER_NAME}:${SERVER_DOCKER_VERSION} \
         && docker start ${SERVER_NAME}
 
     docker build -t ${VI_DOCKER_NAME}:${VI_DOCKER_VERSION} ${SMR_PATH}/App/Vehicle_Identification/docker/ --rm \
-        && docker run -itd -v ${SMR_PATH}/Share:/Share -v ${SMR_PATH}/App/Vehicle_Identification/YOLOv3:/YOLOv3 --name ${VI_NAME} ${VI_DOCKER_NAME}:${VI_DOCKER_VERSION} \
+        && docker run -itd -v ${SMR_PATH}/Share:/Share -v ${SMR_PATH}/App/Vehicle_Identification/YOLOv3:/YOLOv3 \
+            --network ${DOCKER_BRIDGE} \
+            --name ${VI_NAME} ${VI_DOCKER_NAME}:${VI_DOCKER_VERSION} \
         && docker start ${VI_NAME} \
         && docker exec -it ${VI_NAME} make clean \
         && docker exec -it ${VI_NAME} make \
@@ -46,11 +51,14 @@ function install_soft() {
         #&& docker exec -id ${VI_NAME} ./predict
 
     docker build -t ${LLR_DOCKER_NAME}:${LLR_DOCKER_VERSION} ${SMR_PATH}/App/Lane_Line_Recognition/docker --rm \
-        && docker run -itd -v ${SMR_PATH}/Share:/Share -v ${SMR_PATH}/App/Lane_Line_Recognition/Hough:/Hough --name ${LLR_NAME} ${LLR_DOCKER_NAME}:${LLR_DOCKER_VERSION} \
+        && docker run -itd -v ${SMR_PATH}/Share:/Share -v ${SMR_PATH}/App/Lane_Line_Recognition/Hough:/Hough \
+            --network ${DOCKER_BRIDGE} \
+            --name ${LLR_NAME} ${LLR_DOCKER_NAME}:${LLR_DOCKER_VERSION} \
         && docker start ${LLR_NAME}
 }
 
 function uninstall() {
+    docker network rm ${DOCKER_BRIDGE}
     uninstall_soft
     docker image rm ${SEED_DOCKER_NAME}:${SEED_DOCKER_VERSION}
 }

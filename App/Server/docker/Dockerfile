@@ -8,7 +8,7 @@ RUN echo "service apache2 start" >> /root/.bashrc
 
 # Set Pyhton import Path
 RUN echo "export PYTHONPATH=/App/Data_Operator" >> /root/.bashrc
-RUN echo "export ${PYTHONPATH}:PYTHONPATH=/Share/App/Socket_Operator" >> /root/.bashrc
+RUN echo "export PYTHONPATH=${PYTHONPATH}:/Share/App/Socket_Operator" >> /root/.bashrc
 
 # Install MySQL
 #RUN apt install mysql-client mysql-server -y

@@ -24,14 +24,17 @@ class SendThread(threading.Thread):
         return "{}$$$$$".format(data)
 
 class Correspond:
-    def __init__(self, send_port, recv_port):
+    def __init__(self, send_host, send_port, recv_host, recv_port):
         self.send_port = send_port
         self.recv_port = recv_port
-        self.addr = 'localhost'
+        #self.addr = 'localhost'
         self.send_thread = None
 
         self.send_server_check = False
         self.recv_server_check = False
+
+        self.send_addr = (send_host, send_port)
+        self.recv_addr = (recv_host, recv_port)
 
         self.sended = True
 
@@ -39,7 +42,7 @@ class Correspond:
 
         self.socket_s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket_r = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket_s.bind((self.addr, self.send_port))
+        self.socket_s.bind(self.send_addr)
     
     def start_send_server(self):
         try:
@@ -51,19 +54,21 @@ class Correspond:
             self.conn = conn
             self.send_server_check = True
             return True
-        except:
+        except Exception as e:
+            print(e)
             return False
 
     def start_receive_server(self):
+        self.socket_r.connect(self.recv_addr)
+        self.recv_server_check = True
         try:
-            self.socket_r.connect((self.addr, self.recv_port))
-            self.recv_server_check = True
             return True
-        except:
+        except Exception as e:
+            print(e)
             return False
     
     def send(self, data = None):
-        if (data == None or not self.sended or not self.send_server_check):
+        if (data == None or not self.sended or not self.send_server_check or not self.recv_server_check):
             return False
         self.sended = False
         self.send_thread.send(data)
@@ -77,7 +82,7 @@ class Correspond:
         return True
 
     def receive(self):
-        if (self.recv_server_check):
+        if (self.recv_server_check and self.send_server_check):
             str_data = ""
             while (True):
                 data = self.socket_r.recv(2048)
