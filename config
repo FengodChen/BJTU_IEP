@@ -1,18 +1,23 @@
 # [Path]
 export SMR_PATH=$(pwd)
 
+# [Seed]
+export SEED_NAME='fengodchen_seed'
+export SEED_DOCKER_NAME='fengodchen_seed_image'
+export SEED_DOCKER_VERSION='1.0'
+
 # [Server]
 export SERVER_NAME='fengodchen_server_app'
 export SERVER_DOCKER_NAME='fengodchen_server_image'
-export SERVER_DOCKER_VERSION='v1.0'
+export SERVER_DOCKER_VERSION='1.0'
 export SERVER_DOCKER_PORT=10
 
 # [Vehicle Identification]
 export VI_NAME='fengodchen_vehicle_identification_app'
 export VI_DOCKER_NAME='fengodchen_vehicle_identification_image'
-export VI_DOCKER_VERSION='v1.0'
+export VI_DOCKER_VERSION='1.0'
 
 # [Lane Line Recognition]
 export LLR_NAME='fengodchen_lane_line_recognition_app'
 export LLR_DOCKER_NAME='fengodchen_lane_line_recognition_image'
-export LLR_DOCKER_VERSION='v1.0'
+export LLR_DOCKER_VERSION='1.0'
