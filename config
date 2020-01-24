@@ -22,5 +22,10 @@ export LLR_NAME='fengodchen_lane_line_recognition_app'
 export LLR_DOCKER_NAME='fengodchen_lane_line_recognition_image'
 export LLR_DOCKER_VERSION='1.0'
 
+# [Vitual Monitor]
+export VM_NAME='fengodchen_vitual_monitor_app'
+export VM_DOCKER_NAME='fengodchen_vitual_monitor_image'
+export VM_DOCKER_VERSION='1.0'
+
 # [Docker Bridge]
 export DOCKER_BRIDGE='fengodchen_bridge'
