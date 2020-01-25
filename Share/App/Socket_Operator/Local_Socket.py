@@ -1,6 +1,7 @@
 import socket
 import threading
 import time
+import Local_Socket_Config
 
 class SendThread(threading.Thread):
     def __init__(self, conn):
@@ -47,6 +48,9 @@ class Correspond:
         self.socket_s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket_r = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket_s.bind(self.send_addr)
+
+        self.endcode = Local_Socket_Config.transfer_endcode
+        self.endcode_len = len(self.endcode)
     
     def start_send_server(self):
         try:
@@ -93,12 +97,12 @@ class Correspond:
             while (True):
                 data = self.socket_r.recv(2048)
                 str_data = "{}{}".format(str_data, bytes.decode(data))
-                if (len(str_data) >= 5 and str_data[-5:] == "$$$$$"):
+                if (len(str_data) >= self.endcode_len and str_data[-self.endcode_len:] == Local_Socket_Config.transfer_endcode):
                     break
             while (True):
                 if (self.sended):
                     self.conn.sendall(bytes("Received", "utf-8"))
-                    return str_data[:-5]
+                    return str_data[:-self.endcode_len]
         else:
             return None
     
@@ -113,4 +117,4 @@ class Correspond:
             self.socket_r.close()
 
     def process_data(self, data):
-        return "{}$$$$$".format(data)
+        return "{}{}".format(data, self.endcode)
