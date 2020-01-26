@@ -56,24 +56,29 @@ class VideoOperator:
 
         Using eval() to tranfer it!
         '''
-        byte_string = eval(string_trans)
-        b = base64.decodebytes(byte_string)
-        return b
+        if ("b'" in string_trans):
+            byte_string = eval(string_trans)
+            b = base64.decodebytes(byte_string)
+            return b
+        else:
+            return None
 
 class VitualMonitor_Socket_Threading(threading.Thread):
     def __init__(self, videoOperator, send_addr, recv_addr):
         threading.Thread.__init__(self)
         self.videoOperator = videoOperator
         #self.correspond = Local_Socket.Correspond(Local_Socket_Config.vitual_monitor_addr1, Local_Socket_Config.vitual_monitor_addr2)
+        self.send_addr = send_addr
+        self.recv_addr = recv_addr
         self.correspond = Local_Socket.Correspond(send_addr, recv_addr)
-        print("[Vitual Monitor Send]{} Waiting for connect".format(send_addr))
-        self.correspond.start_send_server()
-        while (not self.correspond.start_receive_server()):
-            time.sleep(1)
-            print("[Vitual Monitor Receive]{} Waiting for connect".format(recv_addr))
-        print("[Vitual Monitor]{} Connected{}".format(send_addr, recv_addr))
     
     def run(self):
+        while (not self.correspond.start_receive_server()):
+            time.sleep(0.2)
+            print("[Vitual Monitor Receive]{} Waiting for connect".format(self.recv_addr))
+        print("[Vitual Monitor Send]{} Waiting for connect".format(self.send_addr))
+        self.correspond.start_send_server()
+        print("[Vitual Monitor]{} Connected{}".format(self.send_addr, self.recv_addr))
         while (True):
             rec = self.correspond.receive()
             while (not self.videoOperator.loaded):
@@ -81,8 +86,9 @@ class VitualMonitor_Socket_Threading(threading.Thread):
             if (rec == 'LoopVideo'):
                 while (True):
                     if (self.videoOperator.loaded):
-                        frame_base64 = self.videoOperator.getFrame_base64()
+                        frame_base64 = self.videoOperator.getFrame_base64(time.time())
                         self.correspond.send(frame_base64)
+                    time.sleep(0.033)
             elif ("Time:" in rec):
                 time_sec = float(rec[5:])
                 frame_base64 = self.videoOperator.getFrame_base64(time_sec)
@@ -92,7 +98,18 @@ class VitualMonitor_Socket_Threading(threading.Thread):
                 self.videoOperator.reloadVideo(f_path)
                 self.correspond.send("Refreshed")
 
-def connectVI(video_path):
-    video_opr = VideoOperator(video_path)
-    vms_t = VitualMonitor_Socket_Threading(video_opr, Local_Socket_Config.monitor_identify_addr1, Local_Socket_Config.monitor_identify_addr2)
+def connectVI(video_opr):
+    vms_t = VitualMonitor_Socket_Threading(video_opr, Local_Socket_Config.yolo_monitor_addr2, Local_Socket_Config.yolo_monitor_addr1)
     vms_t.start()
+
+def connectServer(video_opr):
+    vms_t1 = VitualMonitor_Socket_Threading(video_opr, Local_Socket_Config.server_monitor_addr2, Local_Socket_Config.server_monitor_addr1)
+    vms_t2 = VitualMonitor_Socket_Threading(video_opr, Local_Socket_Config.server_monitor_addr4, Local_Socket_Config.server_monitor_addr3)
+    vms_t1.start()
+    vms_t2.start()
+
+if __name__ == "__main__":
+    video_path = "/Share/test_video.mp4"
+    video_opr = VideoOperator(video_path)
+    connectVI(video_opr)
+    connectServer(video_opr)
