@@ -75,35 +75,54 @@ class Correspond:
             print(e)
             return False
     
-    def send(self, data = None):
-        if (data == None or not self.sended or not self.send_server_check or not self.recv_server_check):
+    def send(self, data = None) -> bool:
+        time.sleep(0.01)
+        if (data == None or not self.send_server_check or not self.recv_server_check):
             return False
+        while (not self.sended or not self.received):
+            time.sleep(0.1)
         self.sended = False
-        #self.send_thread.send(data)
-        self.conn.sendall(bytes(self.process_data(data), "utf-8"))
-        while (True):
-            tt = bytes.decode(self.socket_r.recv(128))
-            if ("Received" in tt):
-                self.sended = True
-                return True
-            else:
-                print(tt)
-                self.sended = True
-                return False
+        data = "{}".format(data)
+        #print("[Send]:{}".format(data))
+        data_bytes = bytes(data, "utf-8")
+        data_len = len(data_bytes)
+        self.conn.sendall(bytes("{}{}".format(data_len, Local_Socket_Config.transfer_endcode), "utf-8"))
 
-    def receive(self):
+        tmp = ""
+        while (not "OK" in tmp):
+            tmp = "{}{}".format(tmp, bytes.decode(self.socket_r.recv(32)))
+        self.conn.sendall(data_bytes)
+
+        tmp = ""
+        while (not "Received" in tmp):
+            tmp = "{}{}".format(tmp, bytes.decode(self.socket_r.recv(32)))
+        self.sended = True
+        return True
+
+    def receive(self) -> str:
+        time.sleep(0.01)
+        max_buf = 4096
+        while (not self.sended or not self.received):
+            time.sleep(0.1)
+        self.received = False
         if (self.recv_server_check and self.send_server_check):
-            str_data = ""
-            while (True):
-                data = self.socket_r.recv(2048)
-                str_data = "{}{}".format(str_data, bytes.decode(data))
-                if (len(str_data) >= self.endcode_len and str_data[-self.endcode_len:] == Local_Socket_Config.transfer_endcode):
-                    break
-            while (True):
-                if (self.sended):
-                    self.conn.sendall(bytes("Received", "utf-8"))
-                    return str_data[:-self.endcode_len]
+            buf_info = ""
+            while (not Local_Socket_Config.transfer_endcode in buf_info):
+                buf_info = "{}{}".format(buf_info, bytes.decode(self.socket_r.recv(1024)))
+                #print(buf_info)
+            buf_size = int((buf_info[:-len(Local_Socket_Config.transfer_endcode)]))
+            data_str = ""
+            self.conn.sendall(bytes("OK", "utf-8"))
+            while (buf_size > 0):
+                data = self.socket_r.recv(max_buf)
+                data_str = "{}{}".format(data_str, bytes.decode(data))
+                buf_size -= len(data)
+            self.conn.sendall(bytes("Received", "utf-8"))
+            #print("[Received]: {}".format(data_str))
+            self.received = True
+            return data_str
         else:
+            self.received = True
             return None
     
     def stop_send(self):

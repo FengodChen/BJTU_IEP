@@ -64,8 +64,12 @@ class ServerThread(threading.Thread):
             rec = self.yolo_cor.receive()
             if ('NeedPredict:' in rec):
                 road_name = rec[12:]
+                self.monitorThread.monitor_cor.send("Name:{}".format(road_name))
+                road_stat = self.monitorThread.monitor_cor.receive()
+                if ("[ERROR]:Not Such A Road" in road_stat):
+                    self.yolo_cor.send("ERROR:{}".format(road_name))
+                    continue
                 self.monitorThread.monitor_cor.send("Time:{}".format(time.time()))
-                self.monitorThread.monitor_cor.send("{}".format(road_name))
                 string_trans = self.monitorThread.monitor_cor.receive()
                 byte_image = self.decode_image(string_trans)
                 self.saveImg(byte_image, "/Share/Images/main.jpg")

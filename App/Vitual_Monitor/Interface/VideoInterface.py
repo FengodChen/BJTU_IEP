@@ -8,36 +8,40 @@ import Local_Socket_Config
 
 class VideoOperator:
     def __init__(self):
-        self.loaded = True
+        self.loaded = {}
         self.video_base64 = {}
         self.frame_num = {}
         self.frame_rate = {}
         self.frame_time = {}
     
-    def loadVideo(self, video_path):
-        self.loaded = False
+    def loadVideo(self, video_path) -> bool:
         road_name = video_path.split("/")[-1].split(".")[-2]
-        self.video_base64[road_name] = []
-
+        self.loaded[road_name] = False
         video = cv.VideoCapture(video_path)
+
         self.frame_num[road_name] = int(video.get(cv.CAP_PROP_FRAME_COUNT))
+        if (self.frame_num[road_name] == 0):
+            del(self.loaded[road_name])
+            del(self.frame_num[road_name])
+            return False
+
         self.frame_rate[road_name] = video.get(cv.CAP_PROP_FPS)
         self.frame_time[road_name] = self.frame_num[road_name] / self.frame_rate[road_name]
+
+        self.video_base64[road_name] = []
 
         print("Loading Video")
         for tmp in range(self.frame_num[road_name]):
             (ret, frame) = video.read()
-            if (ret):
-                (is_succ, img_jpg) = cv.imencode(".jpg", frame)
-                jpg_bin = img_jpg.tobytes()
-                jpg_base64 = base64.encodebytes(jpg_bin)
-                self.video_base64[road_name].append(jpg_base64)
-            else:
-                break
+            (is_succ, img_jpg) = cv.imencode(".jpg", frame)
+            jpg_bin = img_jpg.tobytes()
+            jpg_base64 = base64.encodebytes(jpg_bin)
+            self.video_base64[road_name].append(jpg_base64)
         print("Loaded")
 
         video.release()
-        self.loaded = True
+        self.loaded[road_name] = True
+        return True
     
     def getPtr(self, road_name, video_time_sec) -> int:
         video_time_ms = int(video_time_sec * 1000)
@@ -77,33 +81,35 @@ class VitualMonitor_Socket_Threading(threading.Thread):
     
     def run(self):
         while (not self.correspond.start_receive_server()):
-            time.sleep(0.2)
+            time.sleep(1)
             print("[Vitual Monitor Receive]{} Waiting for connect".format(self.recv_addr))
         print("[Vitual Monitor Send]{} Waiting for connect".format(self.send_addr))
         self.correspond.start_send_server()
         print("[Vitual Monitor]{} Connected{}".format(self.send_addr, self.recv_addr))
         while (True):
             rec = self.correspond.receive()
-            while (not self.videoOperator.loaded):
-                time.sleep(0.1)
-            if (rec == 'LoopVideo'):
-                road_name = self.correspond.receive()
+            if ("Name:" in rec):
+                road_name = rec[5:]
                 if (not road_name in self.videoOperator.video_base64):
                     video_path = "/Share/Vitual_Monitor_Video/{}.mp4".format(road_name)
-                    self.videoOperator.loadVideo(video_path)
-                while (True):
-                    if (self.videoOperator.loaded):
-                        frame_base64 = self.videoOperator.getFrame_base64(road_name, time.time())
-                        self.correspond.send(frame_base64)
-                    time.sleep(0.033)
-            elif ("Time:" in rec):
-                road_name = self.correspond.receive()
-                if (not road_name in self.videoOperator.video_base64):
-                    video_path = "/Share/Vitual_Monitor_Video/{}.mp4".format(road_name)
-                    self.videoOperator.loadVideo(video_path)
-                time_sec = float(rec[5:])
-                frame_base64 = self.videoOperator.getFrame_base64(road_name, time_sec)
-                self.correspond.send(frame_base64)
+                    if (not self.videoOperator.loadVideo(video_path)):
+                        self.correspond.send("[ERROR]:Not Such A Road")
+                        continue
+                while (not self.videoOperator.loaded[road_name]):
+                    print("Waiting for Loaded")
+                    time.sleep(0.2)
+                self.correspond.send("[OK]:Road Connected")
+                rec = self.correspond.receive()
+                if (rec == 'LoopVideo'):
+                    while (True):
+                        if (self.videoOperator.loaded[road_name]):
+                            frame_base64 = self.videoOperator.getFrame_base64(road_name, time.time())
+                            self.correspond.send(frame_base64)
+                        time.sleep(0.033)
+                elif ("Time:" in rec):
+                    time_sec = float(rec[5:])
+                    frame_base64 = self.videoOperator.getFrame_base64(road_name, time_sec)
+                    self.correspond.send(frame_base64)
 
 def connectVI(video_opr):
     vms_t = VitualMonitor_Socket_Threading(video_opr, Local_Socket_Config.yolo_monitor_addr2, Local_Socket_Config.yolo_monitor_addr1)
