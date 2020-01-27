@@ -62,8 +62,10 @@ class ServerThread(threading.Thread):
             time.sleep(0.1)
         while (True):
             rec = self.yolo_cor.receive()
-            if (rec == 'NeedPredict'):
+            if ('NeedPredict:' in rec):
+                road_name = rec[12:]
                 self.monitorThread.monitor_cor.send("Time:{}".format(time.time()))
+                self.monitorThread.monitor_cor.send("{}".format(road_name))
                 string_trans = self.monitorThread.monitor_cor.receive()
                 byte_image = self.decode_image(string_trans)
                 self.saveImg(byte_image, "/Share/Images/main.jpg")
@@ -72,7 +74,7 @@ class ServerThread(threading.Thread):
                     time.sleep(0.2)
                     if (self.darknetThread.hadPredict()):
                         self.darknetThread.cleanPredict()
-                        self.yolo_cor.send("HadPredict")
+                        self.yolo_cor.send("HadPredict:{}".format(road_name))
                         break
     
     def decode_image(self, string_trans) -> bytes:
