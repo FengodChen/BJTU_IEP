@@ -42,11 +42,11 @@ class MonitorThread(threading.Thread):
         print("{} Connected{}".format(self.send_addr, self.recv_addr))
         self.connected = True
 
-class ServerThread(threading.Thread):
+class LaneLineThread(threading.Thread):
     def __init__(self, darknetThread, monitorThread):
         threading.Thread.__init__(self)
-        self.send_addr = Local_Socket_Config.server_yolo_addr2
-        self.recv_addr = Local_Socket_Config.server_yolo_addr1
+        self.send_addr = Local_Socket_Config.laneline_yolo_addr2
+        self.recv_addr = Local_Socket_Config.laneline_yolo_addr1
         self.yolo_cor = Local_Socket.Correspond(self.send_addr, self.recv_addr)
         self.darknetThread = darknetThread
         self.monitorThread = monitorThread
@@ -99,7 +99,7 @@ class ServerThread(threading.Thread):
 if __name__ == "__main__":
     darknetThread = DarknetThread('./libyolo.so')
     monitorThread = MonitorThread()
-    serverThread = ServerThread(darknetThread, monitorThread)
+    lanelineThread = LaneLineThread(darknetThread, monitorThread)
     darknetThread.start()
     monitorThread.start()
-    serverThread.start()
+    lanelineThread.start()

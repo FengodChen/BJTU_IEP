@@ -59,7 +59,7 @@ function install_soft() {
         #&& docker exec -id ${VI_NAME} ./predict
 
     docker build -t ${LLR_DOCKER_NAME}:${LLR_DOCKER_VERSION} ${SMR_PATH}/App/Lane_Line_Recognition/docker --rm \
-        && docker run -itd -v ${SMR_PATH}/Share:/Share -v ${SMR_PATH}/App/Lane_Line_Recognition/Hough:/Hough \
+        && docker run -itd -v ${SMR_PATH}/Share:/Share -v ${SMR_PATH}/App/Lane_Line_Recognition/App:/App \
             --network ${DOCKER_BRIDGE} \
             --name ${LLR_NAME} ${LLR_DOCKER_NAME}:${LLR_DOCKER_VERSION} \
         && docker start ${LLR_NAME}

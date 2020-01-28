@@ -5,6 +5,6 @@ MAINTAINER LiaoChen <17211401@bjtu.edu.cn>
 RUN echo "export PYTHONPATH=/Share/App/Socket_Operator" >> /root/.bashrc
 
 # Set Share File
-RUN mkdir /Hough
+RUN mkdir /App
 
-WORKDIR /Hough
+WORKDIR /App
