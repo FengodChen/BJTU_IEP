@@ -33,9 +33,9 @@ def Connect_Monitor_2():
     cor = Connect(send_addr, recv_addr, True)
     return cor
 
-def Connect_Yolo():
-    send_addr = Local_Socket_Config.server_yolo_addr1
-    recv_addr = Local_Socket_Config.server_yolo_addr2
+def Connect_LaneLine():
+    send_addr = Local_Socket_Config.server_laneline_addr1
+    recv_addr = Local_Socket_Config.server_laneline_addr2
     cor = Connect(send_addr, recv_addr, True)
     return cor
 
