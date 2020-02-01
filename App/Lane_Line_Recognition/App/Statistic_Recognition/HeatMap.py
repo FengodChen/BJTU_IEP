@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sqlite3
 import cv2 as cv
+import SQLiteOperator
 
 '''
 roadName = "G107"
@@ -108,6 +109,14 @@ class ManualGetLane:
             elif (key >= ord("0") and key <= ord("9")):
                 self.level = int(chr(key))
         cv.destroyAllWindows()
+    
+    def save(self, db_path, roadName):
+        db = SQLiteOperator.LaneAreaOperator(db_path, True)
+        db.write(roadName, self.img_flag)
+
+def getDefaultSQLPath():
+    s = "/home/fengodchen/WorkSpace/BJTU_IEP/Share/laneline_data/laneArea.db"
+    return s
 
 def getDefaultHeatMap():
     s = HeatMap("G107", "/home/fengodchen/WorkSpace/BJTU_IEP/Share/laneline_data/statistic.db", (544, 960))
