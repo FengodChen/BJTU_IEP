@@ -1,5 +1,6 @@
 import Numpy_String
 import sqlite3
+import numpy as np
 
 class BaseOperator:
     def __init__(self, db_path, rw, check_same_thread = True):
@@ -18,7 +19,7 @@ class BaseOperator:
         args = [value1, value2, ..., valueN]
         '''
         col_str = self.args2str(args)
-        self.db.execute("CREATE TABLE {} ({})".format(table_name, col_str))
+        self.db.execute("CREATE TABLE IF NOT EXISTS {} ({})".format(table_name, col_str))
 
     def read(self, table_name, col = "*", condition = None) -> list:
         '''
@@ -49,3 +50,24 @@ class BaseOperator:
                 self.db.commit()
         else:
             raise Exception("Cannot write because this BaseOperator define db file read-only file")
+
+class LaneAreaOperator(BaseOperator):
+    def __init__(self, db_path, rw, check_same_thread=True):
+        super().__init__(db_path, rw, check_same_thread=check_same_thread)
+        self.__colList = ["RoadName TEXT NOT NULL", "Size TEXT NOT NULL", "Array TEXT NOT NULL"]
+    
+    def createTable(self):
+        super().createTable("Main", self.__colList)
+    
+    def read(self, roadName) -> np.array:
+        try:
+            (size_str, array_str) = super().read("Main", "Size, Array", "RoadName IS {}".format(roadName))[0]
+            npArray = Numpy_String.str2np(array_str, size_str)
+            return npArray
+        except:
+            return None
+    
+    def write(self, roadName, npArray, commit=True):
+        (array_str, size_str) = Numpy_String.np2str(npArray)
+        self.createTable()
+        super().write("Main", ["\"{}\"".format(roadName), "\"{}\"".format(size_str), "\"{}\"".format(array_str)], commit=commit)
