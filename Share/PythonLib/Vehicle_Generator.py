@@ -28,7 +28,7 @@ def getTimeRange(startTime, endTime, dt = 1):
     
     return timeList
 
-class Vehicle_Operator:
+class Vehicle_Generator:
     def __init__(self, treedb):
         '''
         Vehicle_Generator(Vehicle_Tree.TreeDB)

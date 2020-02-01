@@ -50,3 +50,10 @@ def loopVideo(monitor_cor):
             f.write(b)
             f.close()
         
+if __name__ == "__main__":
+    Connect_LaneLine()
+    Connect_Monitor_1()
+    Connect_Monitor_2()
+    while (True):
+        time.sleep(1)
+

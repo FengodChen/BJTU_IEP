@@ -29,7 +29,7 @@ class TreeDB:
     def __init__(self, treePath, db_name):
         self.treePath = treePath
         self.db_name = db_name
-        self.db = sqlite3.connect("{}/{}".format(treePath, db_name))
+        self.db = sqlite3.connect("{}/{}".format(treePath, db_name), check_same_thread=False)
     
     def findData(self, roadName, date):
         '''

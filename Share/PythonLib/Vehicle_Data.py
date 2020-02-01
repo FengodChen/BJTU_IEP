@@ -5,7 +5,7 @@ import numpy as np
 class IndexDB:
     def __init__(self, db_path):
         self.db_path = db_path
-        self.db = sqlite3.connect(db_path)
+        self.db = sqlite3.connect(db_path, check_same_thread=False)
         self.roadLine = None
         self.vehicleClass = ['Car', 'Bus', 'Truck']
         self.initRoadLineFlag = False

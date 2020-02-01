@@ -60,8 +60,12 @@ class LaneAreaOperator(BaseOperator):
         super().createTable("Main", self.__colList)
     
     def read(self, roadName) -> np.array:
+        # Debug
+        (size_str, array_str) = super().read("Main", "Size, Array", "RoadName IS \"{}\"".format(roadName))[0]
+        npArray = Numpy_String.str2np(array_str, size_str)
+        return npArray
         try:
-            (size_str, array_str) = super().read("Main", "Size, Array", "RoadName IS {}".format(roadName))[0]
+            (size_str, array_str) = super().read("Main", "Size, Array", "RoadName IS \"{}\"".format(roadName))[0]
             npArray = Numpy_String.str2np(array_str, size_str)
             return npArray
         except:
@@ -71,3 +75,36 @@ class LaneAreaOperator(BaseOperator):
         (array_str, size_str) = Numpy_String.np2str(npArray)
         self.createTable()
         super().write("Main", ["\"{}\"".format(roadName), "\"{}\"".format(size_str), "\"{}\"".format(array_str)], commit=commit)
+    
+    def getRoadList(self) -> list:
+        roadList = super().read("Main", "RoadName")
+        l = len(roadList)
+        for ptr in range(l):
+            roadList[ptr] = roadList[ptr][0]
+        return roadList
+
+class VehicleOperator(BaseOperator):
+    def __init__(self, db_path, laneArea_opr, rw=False, check_same_thread=True):
+        super().__init__(db_path, rw, check_same_thread=check_same_thread)
+        self.vehicleList = ["car", "bus", "truck"]
+        self.laneArea_opr = laneArea_opr
+    
+    def read(self, roadName) -> dict:
+        '''
+        Return {"car": [r1, r2, ..., rn], "bus": [...], "truck": [...]}
+        '''
+        locationDict = {}
+        laneArray = self.laneArea_opr.read(roadName)
+        (h, w) = np.shape(laneArray)
+        lineNum = np.max(laneArray)
+        for vehicleName in self.vehicleList:
+            locationDict[vehicleName] = np.zeros(lineNum, dtype=np.uint64)
+            locationList = super().read(vehicleName)
+            for location in locationList:
+                (left, right, top, bottom) = location
+                x = int(w * (left + right) / 2)
+                y = int(h * (1 - (top + bottom) / 2))
+                if (laneArray[y][x] > 0):
+                    locationDict[vehicleName][laneArray[y][x] - 1] += 1
+        
+        return locationDict

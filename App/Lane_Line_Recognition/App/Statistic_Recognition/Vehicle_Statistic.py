@@ -1,9 +1,16 @@
 import sqlite3
 import threading
 import time
+import numpy as np
 
 import Local_Socket
 import Local_Socket_Config
+
+import Vehicle_Tree
+import Vehicle_Data
+import Vehicle_Generator
+
+import SQLiteOperator
     
 class SQLOperator:
     def __init__(self, statisticDB_path, vehicleDB_path):
@@ -46,11 +53,11 @@ class SQLOperator:
         db.close()
         self.sDB.commit()
 
-class StatisticThread(threading.Thread):
+class GetLaneStatisticThread(threading.Thread):
     def __init__(self, statisticDB_path, vehicleDB_path, clock_minute):
         threading.Thread.__init__(self)
-        self.send_addr = Local_Socket_Config.laneline_yolo_addr1
-        self.recv_addr = Local_Socket_Config.laneline_yolo_addr2
+        self.send_addr = Local_Socket_Config.laneline_yolo_addr3
+        self.recv_addr = Local_Socket_Config.laneline_yolo_addr4
         self.cor = Local_Socket.Correspond(self.send_addr, self.recv_addr)
         self.clock_minute = clock_minute
         self.opr = SQLOperator(statisticDB_path, vehicleDB_path)
@@ -110,6 +117,61 @@ class StatisticThread(threading.Thread):
         self.opr.sDB.commit()
         self.updatingFlag = False
 
+class StatisticThread(threading.Thread):
+    def __init__(self, laneDB_path, vehicleDB_path, clock_minute):
+        threading.Thread.__init__(self)
+        self.send_addr = Local_Socket_Config.laneline_yolo_addr1
+        self.recv_addr = Local_Socket_Config.laneline_yolo_addr2
+        self.cor = Local_Socket.Correspond(self.send_addr, self.recv_addr)
+        self.clock_minute = clock_minute
+
+        self.treeDB = Vehicle_Tree.TreeDB("/Share/Main_Data", "tree.db")
+        self.gen = Vehicle_Generator.Vehicle_Generator(self.treeDB)
+        self.laneArea = SQLiteOperator.LaneAreaOperator(laneDB_path, False, False)
+        self.vehicleDB = SQLiteOperator.VehicleOperator(vehicleDB_path, self.laneArea, False, False)
+        
+        self.roadList = self.laneArea.getRoadList()
+    
+    def run(self):
+        print("{} Waiting for connect".format(self.send_addr))
+        self.cor.start_send_server()
+        while (not self.cor.start_receive_server()):
+            time.sleep(1)
+            print("{} Waiting for connect".format(self.recv_addr))
+        print("{} Connected{}".format(self.send_addr, self.recv_addr))
+        startTime = time.time()
+        endTime = time.time() + self.clock_minute * 60
+        while (True):
+            clock_seconds = self.clock_minute * 60
+            sleep_seconds = clock_seconds - (endTime - startTime)
+            if (sleep_seconds < 0):
+                sleep_seconds = 0
+            time.sleep(sleep_seconds)
+
+            startTime = time.time()
+
+            for roadName in self.roadList:
+                nowDate = Vehicle_Tree.getDate()
+                nowTime = Vehicle_Tree.getTime()
+                print("NeedPredict: {}".format(roadName))
+                self.cor.send("NeedPredict:{}".format(roadName))
+                rec = self.cor.receive()
+                if ("ERROR:" in rec):
+                    print("[ERROR]: Road \"{}\" cannot be found".format(roadName))
+                else:
+                    sticDict = self.vehicleDB.read(roadName)
+                    sticArray = []
+                    for name in ["car", "bus", "truck"]:
+                        sticArray.append(sticDict[name])
+                    # TODO
+                    laneArray = []
+                    for i in range(len(sticArray[0])):
+                        laneArray.append("Road{}".format(i+1))
+                    self.gen.insertData(roadName, nowDate, nowTime, sticArray, laneArray)
+                    print("Added: {}".format(roadName))
+
+            endTime = time.time()
+
 class ServerThread(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
@@ -131,11 +193,13 @@ class ServerThread(threading.Thread):
 
 if __name__ == "__main__":
     s_path = "/Share/laneline_data/statistic.db"
+    l_path = "/Share/laneline_data/laneArea.db"
     v_path = "/Share/vehicle_data/location.db"
     clock_minute = 0.1
-    roadList = ["G107"]
-    sticThread = StatisticThread(s_path, v_path, clock_minute)
+    roadList = ["G107", "G108", "G109"]
+    #sticThread = StatisticThread(s_path, v_path, clock_minute)
+    sticThread = StatisticThread(l_path, v_path, clock_minute)
     serverThread = ServerThread()
     sticThread.start()
     serverThread.start()
-    sticThread.addRoad(roadList)
+    #sticThread.addRoad(roadList)
