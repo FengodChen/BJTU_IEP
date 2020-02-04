@@ -43,7 +43,7 @@ function install() {
 
 function install_soft() {
     docker build -t ${SERVER_DOCKER_NAME}:${SERVER_DOCKER_VERSION} ${SMR_PATH}/App/Server/docker/ --rm \
-        && docker run -itd -v ${SMR_PATH}/Share:/Share -v ${SMR_PATH}/App/Server/html:/var/www/html -v ${SMR_PATH}/App/Server/App:/App -p 127.0.0.1:${SERVER_DOCKER_PORT}:80\
+        && docker run -itd -v ${SMR_PATH}/Share:/Share -v ${SMR_PATH}/App/Server/App/Web_Flask:/var/www/html -v ${SMR_PATH}/App/Server/App:/App -p 127.0.0.1:${SERVER_DOCKER_PORT}:80\
             --network ${DOCKER_BRIDGE} \
             --name ${SERVER_NAME} ${SERVER_DOCKER_NAME}:${SERVER_DOCKER_VERSION} \
         && docker start ${SERVER_NAME}
