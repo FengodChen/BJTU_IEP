@@ -47,6 +47,8 @@ class Correspond:
 
         self.socket_s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket_r = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket_s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.socket_r.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.socket_s.bind(self.send_addr)
 
         self.endcode = Local_Socket_Config.transfer_endcode
