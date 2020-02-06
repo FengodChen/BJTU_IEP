@@ -13,7 +13,7 @@ class Generator(Vehicle_Generator.Vehicle_Generator):
         keys: type=str
         '''
         roadIndex = []
-        cursors = self.treedb.db.execute("SELECT name FROM sqlite_master WHERE type='table' and name LIKE '{}%';".format(roadNameKey))
+        cursors = self.treedb.db.execute("SELECT name FROM sqlite_master WHERE type='table' and name LIKE '%{}%';".format(roadNameKey))
         for cursor in cursors:
             roadIndex.append(cursor[0])
         return roadIndex
