@@ -13,7 +13,9 @@ class Generator(Vehicle_Generator.Vehicle_Generator):
         keys: type=str
         '''
         roadIndex = []
+        self.treedb.db.execute("PRAGMA case_sensitive_like=ON;")
         cursors = self.treedb.db.execute("SELECT name FROM sqlite_master WHERE type='table' and name LIKE '%{}%';".format(roadNameKey))
+        self.treedb.db.execute("PRAGMA case_sensitive_like=OFF;")
         for cursor in cursors:
             roadIndex.append(cursor[0])
         return roadIndex

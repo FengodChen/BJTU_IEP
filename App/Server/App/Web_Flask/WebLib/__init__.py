@@ -1,1 +1,1 @@
-__all__ = ['sqliteData']
+__all__ = ['sqliteData', 'socketConnect']

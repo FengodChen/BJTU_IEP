@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title> Video </title>
+        <script src="{{ url_for("static",filename='js/jquery-3.4.1.js')}}"></script>
+        <script>
+            $(document).ready(function(){
+                $("#roadkeys").keyup(function(){
+                    roadkeys = $("#roadkeys").val();
+                    $.post("/videoLoop", 
+                    {webReady:"OK"}, function(recv){
+                        $("#imgByte").html(recv)
+                    });
+                });
+            });
+        </script>
+    </head>
+    <body>
+        <h3>输入路段名字:</h3>
+        <input type="text" id="roadkeys" />
+        <h3>搜索结果:</h3>
+        <div id="imgByte">
+        </div>
+    </body>
+</html>

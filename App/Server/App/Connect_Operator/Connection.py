@@ -1,3 +1,6 @@
+import sys
+sys.path.insert(0, '/Share/PythonLib')
+
 import Local_Socket
 import Local_Socket_Config
 import time
