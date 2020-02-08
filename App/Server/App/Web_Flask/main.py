@@ -1,4 +1,4 @@
-from flask import Flask, redirect, render_template, request, url_for
+from flask import Flask, redirect, render_template, request, url_for, Response
 from WebLib import *
 import json
 import time
@@ -36,6 +36,16 @@ bytePic = b"None"
 def changePic(data):
     global bytePic
     bytePic = data
+
+def frameGen():
+    while (True):
+        Send("getVideo")
+        strPic_base64 = Recv()
+        if ("b'" in strPic_base64):
+            byte_string = eval(strPic_base64)
+            byte_pic = base64.decodebytes(byte_string)
+            frame = b'--frame\r\n' + b'Content-Type: image/jpeg\r\n\r\n' + byte_pic + b'\r\n'
+            yield frame
 
 @app.route('/')
 def mainWeb():
@@ -79,8 +89,14 @@ def videoLoop():
             changePic(strPic_base64)
         #Send('getVideo')
         #bytePic = Recv()
-        return "<img src=\"/pic/{}.jpg\"/>".format(time.time())
+        #return "<img src=\"/pic/{}.jpg\"/>".format(time.time())
+        return "<p>Hello</p>"
 
 @app.route('/pic/<randtime>.jpg')
 def pic(randtime):
     return bytePic
+
+@app.route('/video_feed')
+def video_feed():
+    return Response(frameGen(),
+                    mimetype='multipart/x-mixed-replace; boundary=frame')

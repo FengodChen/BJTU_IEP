@@ -72,12 +72,9 @@ class WebHost(socketserver.BaseRequestHandler):
         while True:
             try:
                 (succ, data) = self.recv()
-                print("({}, {})".format(succ, data))
                 if (succ):
                     rsp = self.operate(data)
-                    print("End Order")
                     self.send(rsp)
-                    print("End Send")
                 else:
                     continue
             except Exception as e:
@@ -85,9 +82,7 @@ class WebHost(socketserver.BaseRequestHandler):
                 break
 
     def operate(self, order:str) -> str:
-        print("In Operator")
         if (order == 'getVideo'):
-            print("Start Order")
             return next(lm)
         elif (order == '?'):
             return "?"
