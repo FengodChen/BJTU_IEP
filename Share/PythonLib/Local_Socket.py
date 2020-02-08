@@ -3,6 +3,7 @@ import threading
 import time
 import Local_Socket_Config
 
+debug_flag = False
 class SendThread(threading.Thread):
     def __init__(self, conn):
         threading.Thread.__init__(self)
@@ -99,6 +100,8 @@ class Correspond:
         while (not "Received" in tmp):
             tmp = "{}{}".format(tmp, bytes.decode(self.socket_r.recv(32)))
         self.sended = True
+        if (debug_flag):
+            print("[Sended]{}".format(data))
         return True
 
     def receive(self) -> str:
@@ -122,6 +125,8 @@ class Correspond:
             self.conn.sendall(bytes("Received", "utf-8"))
             #print("[Received]: {}".format(data_str))
             self.received = True
+            if (debug_flag):
+                print("[Received]{}".format(data_str))
             return data_str
         else:
             self.received = True

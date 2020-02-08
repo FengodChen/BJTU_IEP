@@ -2,6 +2,7 @@ from flask import Flask, redirect, render_template, request, url_for
 from WebLib import *
 import json
 import time
+import base64
 
 def setLabel(text:str, setStr:str, label:str) -> str:
     tmp = ""
@@ -14,11 +15,27 @@ def setLabel(text:str, setStr:str, label:str) -> str:
 
 app = Flask(__name__)
 gen = sqliteData.Generator()
-loopMonitor = socketConnect.loopMonitor
-operateMonitor = socketConnect.operateMonitor
-operateLaneLine = socketConnect.operateLaneLine
+sk = socketConnect.HostConnection('127.0.0.1', 8097)
 
-bytePic = b""
+def Send(data:str) -> None:
+    succ = False
+    while (not succ):
+        succ = sk.send(data)
+
+def Recv() -> str:
+    succ = False
+    data = None
+    while (not succ):
+        (succ, data) = sk.recv()
+    return data
+
+print("Threading")
+
+bytePic = b"None"
+
+def changePic(data):
+    global bytePic
+    bytePic = data
 
 @app.route('/')
 def mainWeb():
@@ -52,23 +69,18 @@ def videoLoop():
     webReady = request.form.get("webReady")
     #if (webReady == "OK"):
     if (True):
-        bytePic = next(loopMonitor)
-        return "<img src=\"/pic/{}\"/>".format(time.time())
+        Send("getVideo")
+        strPic_base64 = Recv()
+        if ("b'" in strPic_base64):
+            byte_string = eval(strPic_base64)
+            changePic(base64.decodebytes(byte_string))
+        else:
+            #changePic(b"None")
+            changePic(strPic_base64)
+        #Send('getVideo')
+        #bytePic = Recv()
+        return "<img src=\"/pic/{}.jpg\"/>".format(time.time())
 
-@app.route('/pic/<randtime>')
+@app.route('/pic/<randtime>.jpg')
 def pic(randtime):
     return bytePic
-
-if __name__ == "__main__":
-    print("Run in main")
-    #loopMonitor = socketConnect.LoopMonitor_Thread()
-    #loopMonitor.start()
-
-    #operateMonitor = socketConnect.OperateMonitor_Thread()
-    #operateMonitor.start()
-
-    #operateLaneLine = socketConnect.OperateLaneLine_Thread()
-    #operateLaneLine.start()
-
-    #app.run(host='0.0.0.0', port=80, threaded=True)
-    app.run(host='0.0.0.0', port=80)
