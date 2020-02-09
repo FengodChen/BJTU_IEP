@@ -1,3 +1,8 @@
+#! /usr/bin/python3
+
+import sys
+sys.path.insert(0, '/Share/PythonLib')
+
 import cv2 as cv
 import numpy as np
 import base64

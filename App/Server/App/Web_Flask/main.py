@@ -39,6 +39,7 @@ def changePic(data):
 
 def frameGen():
     while (True):
+        time.sleep(0.033)
         Send("getVideo")
         strPic_base64 = Recv()
         if ("b'" in strPic_base64):
@@ -73,28 +74,6 @@ def getTree():
         #page = "{}<p>{}</p>".format(page, name)
         page = "{}<option value=\"{}\">{}</option>".format(page, name, name)
     return page
-
-@app.route('/videoLoop', methods=['POST'])
-def videoLoop():
-    webReady = request.form.get("webReady")
-    #if (webReady == "OK"):
-    if (True):
-        Send("getVideo")
-        strPic_base64 = Recv()
-        if ("b'" in strPic_base64):
-            byte_string = eval(strPic_base64)
-            changePic(base64.decodebytes(byte_string))
-        else:
-            #changePic(b"None")
-            changePic(strPic_base64)
-        #Send('getVideo')
-        #bytePic = Recv()
-        #return "<img src=\"/pic/{}.jpg\"/>".format(time.time())
-        return "<p>Hello</p>"
-
-@app.route('/pic/<randtime>.jpg')
-def pic(randtime):
-    return bytePic
 
 @app.route('/video_feed')
 def video_feed():

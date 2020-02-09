@@ -14,31 +14,45 @@ function help() {
 }
 
 function start() {
-    docker start ${SERVER_NAME}
+    docker start ${SERVER_NAME} \
+        && docker exec -id ${SERVER_NAME} chmod a+x Host/main.py \
+        && docker exec -id ${SERVER_NAME} ./Host/main.py
     #docker start ${VI_NAME} \
     #    && docker exec -id ${VI_NAME} ./predict
-    docker start ${VI_NAME}
+    docker start ${VI_NAME} \
+        && docker exec -id ${VI_NAME} chmod a+x main.py \
+        && docker exec -id ${VI_NAME} ./main.py
     docker start ${LLR_NAME}
-}
-
-function start_vitual_monitor() {
-    docker start ${VM_NAME}
+    if [ "$1" = "-v" ]; then
+        docker start ${VM_NAME} \
+            && docker exec -id ${VM_NAME} chmod a+x VideoInterface.py \
+            && docker exec -id ${VM_NAME} ./VideoInterface.py
+    fi
 }
 
 function stop() {
+    if [ "$1" = "-v" ]; then
+        docker stop ${VM_NAME}
+    fi
     docker stop ${SERVER_NAME}
     docker stop ${VI_NAME}
     docker stop ${LLR_NAME}
 }
 
-function stop_vitual_monitor() {
-    docker stop ${VM_NAME}
+function restart() {
+    stop $1 && start $1
 }
 
 function install() {
-    docker network create -d bridge ${DOCKER_BRIDGE}
-    docker build -t ${SEED_DOCKER_NAME}:${SEED_DOCKER_VERSION} ${SMR_PATH}/Docker/ --rm
-    install_soft
+    if [ "$1" = "-s" ]; then
+        install_soft
+    elif [ "$1" = "-v" ]; then
+        install_vitual_monitor
+    else
+        docker network create -d bridge ${DOCKER_BRIDGE}
+        docker build -t ${SEED_DOCKER_NAME}:${SEED_DOCKER_VERSION} ${SMR_PATH}/Docker/ --rm
+        install -s
+    fi
 }
 
 function install_soft() {
@@ -55,7 +69,7 @@ function install_soft() {
         && docker start ${VI_NAME} \
         && docker exec -it ${VI_NAME} make clean \
         && docker exec -it ${VI_NAME} make \
-        && docker exec -id ${VI_NAME} chmod a+x ./predict
+        #&& docker exec -id ${VI_NAME} chmod a+x ./predict
         #&& docker exec -id ${VI_NAME} ./predict
 
     docker build -t ${LLR_DOCKER_NAME}:${LLR_DOCKER_VERSION} ${SMR_PATH}/App/Lane_Line_Recognition/docker --rm \
@@ -63,6 +77,8 @@ function install_soft() {
             --network ${DOCKER_BRIDGE} \
             --name ${LLR_NAME} ${LLR_DOCKER_NAME}:${LLR_DOCKER_VERSION} \
         && docker start ${LLR_NAME}
+
+        stop && start
 }
 
 function install_vitual_monitor() {
@@ -71,12 +87,21 @@ function install_vitual_monitor() {
             --network ${DOCKER_BRIDGE} \
             --name ${VM_NAME} ${VM_DOCKER_NAME}:${VM_DOCKER_VERSION} \
         && docker start ${VM_NAME}
+    
+    stop -v && start -v
 }
 
 function uninstall() {
-    docker network rm ${DOCKER_BRIDGE}
-    uninstall_soft
-    docker image rm ${SEED_DOCKER_NAME}:${SEED_DOCKER_VERSION}
+    if [ "$1" = "-s" ]; then
+        uninstall_soft
+    elif [ "$1" = "-v" ]; then
+        uninstall_vitual_monitor
+    else
+        docker network rm ${DOCKER_BRIDGE}
+        uninstall_soft
+        uninstall_vitual_monitor
+        docker image rm ${SEED_DOCKER_NAME}:${SEED_DOCKER_VERSION}
+    fi
 }
 
 function uninstall_soft() {
@@ -101,25 +126,15 @@ function uninstall_vitual_monitor() {
 
 # [Shell]
 if [ "$1" = "start" ]; then
-    start
-elif [ "$1" = "start_vitual_monitor" ]; then
-    start_vitual_monitor
+    start $2
 elif [ "$1" = "install" ]; then
-    install
-elif [ "$1" = "install_soft" ]; then
-    install_soft
-elif [ "$1" = "install_vitual_monitor" ]; then
-    install_vitual_monitor
+    install $2
 elif [ "$1" = "uninstall" ]; then
-    uninstall
-elif [ "$1" = "uninstall_soft" ]; then
-    uninstall_soft
-elif [ "$1" = "uninstall_vitual_monitor" ]; then
-    uninstall_vitual_monitor
+    uninstall $2
 elif [ "$1" = "stop" ]; then
-    stop
-elif [ "$1" = "stop_vitual_monitor" ]; then
-    stop_vitual_monitor
+    stop $2
+elif [ "$1" = "restart" ]; then
+    restart $2
 elif [ "$1" = "help" ]; then
     help
 else

@@ -4,15 +4,7 @@
         <title> Video </title>
         <script src="{{ url_for("static",filename='js/jquery-3.4.1.js')}}"></script>
         <script>
-            $(document).ready(function(){
-                $("#roadkeys").keyup(function(){
-                    roadkeys = $("#roadkeys").val();
-                    $.post("/videoLoop", 
-                    {webReady:"OK"}, function(recv){
-                        $("#imgByte").html(recv)
-                    });
-                });
-            });
+        
         </script>
     </head>
     <body>
@@ -25,7 +17,7 @@
 
         <div>
             <h1> Video Streaming </h1>
-            ![]({{ url_for('video_feed') }})
+            <img src="/video_feed"> </img>
         </div>
     </body>
 </html>

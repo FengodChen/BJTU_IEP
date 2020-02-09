@@ -1,3 +1,9 @@
+#! /usr/bin/python3
+
+import sys
+sys.path.insert(0, '/App/Host')
+sys.path.insert(0, '/Share/PythonLib')
+
 import threading
 import base64
 import time
@@ -8,16 +14,14 @@ import Connection
 class LoopMonitor_Thread(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
-        self.flag = 1
+        self.nextFlag = False
         self.strPic_base64 = None
     
     def __iter__(self):
         return self
     
     def __next__(self):
-        while (self.flag):
-            time.sleep(0.1)
-        self.flag = 1
+        self.nextFlag = True
         return self.strPic_base64
     
     def run(self):
@@ -30,11 +34,10 @@ class LoopMonitor_Thread(threading.Thread):
                 break
         cor.send("LoopVideo")
         while (True):
-            if (self.flag == 1):
-                self.strPic_base64 = cor.receive()
-                self.flag = 0
-            else:
-                time.sleep(0.03)
+            while (not self.nextFlag):
+                time.sleep(0.001)
+            self.strPic_base64 = cor.receive()
+            self.nextFlag = False
     
     def decode(self, picString):
         if ("b'" in picString):
