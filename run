@@ -15,6 +15,7 @@ function help() {
 
 function start() {
     docker start ${SERVER_NAME} \
+        && docker exec -id ${SERVER_NAME} service apache2 start \
         && docker exec -id ${SERVER_NAME} chmod a+x Host/main.py \
         && docker exec -id ${SERVER_NAME} ./Host/main.py
     #docker start ${VI_NAME} \

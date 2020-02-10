@@ -16,7 +16,7 @@ RUN echo 'export PYTHONPATH=${PYTHONPATH}:/Share/App/Socket_Operator' >> /root/.
 # Install and Configure Apache2
 RUN apt install apache2 libapache2-mod-wsgi-py3 -y
 RUN echo "ServerName localhost:80" >> /etc/apache2/apache2.conf
-RUN echo "service apache2 start" >> /root/.bashrc
+#RUN echo "service apache2 start" >> /root/.bashrc
 RUN echo 'WSGIPythonHome "/usr"' >> /etc/apache2/apache2.conf
 RUN echo 'WSGIScriptAlias / /var/www/html/main.wsgi' >> /etc/apache2/apache2.conf
 

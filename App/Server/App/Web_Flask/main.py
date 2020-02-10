@@ -31,22 +31,26 @@ def Recv() -> str:
 
 print("Threading")
 
-bytePic = b"None"
+def decodeBase64Img(img:str) -> bytes:
+    if ("b'" in img):
+        byte_string = eval(img)
+        byte_pic = base64.decodebytes(byte_string)
+        return byte_pic
+    else:
+        return b'0'
 
-def changePic(data):
-    global bytePic
-    bytePic = data
+def getMonitorImg() -> bytes:
+    Send("getVideo")
+    strPic_base64 = Recv()
+    byte_pic = decodeBase64Img(strPic_base64)
+    return byte_pic
 
 def frameGen():
     while (True):
         time.sleep(0.033)
-        Send("getVideo")
-        strPic_base64 = Recv()
-        if ("b'" in strPic_base64):
-            byte_string = eval(strPic_base64)
-            byte_pic = base64.decodebytes(byte_string)
-            frame = b'--frame\r\n' + b'Content-Type: image/jpeg\r\n\r\n' + byte_pic + b'\r\n'
-            yield frame
+        byte_pic = getMonitorImg()
+        frame = b'--frame\r\n' + b'Content-Type: image/jpeg\r\n\r\n' + byte_pic + b'\r\n'
+        yield frame
 
 @app.route('/')
 def mainWeb():
@@ -60,6 +64,10 @@ def searchRoad():
 def videoPage():
     return render_template('videoLoop.html')
 
+@app.route('/draw_pic')
+def draw_pic():
+    return render_template('draw.html')
+
 @app.route('/hello/<name>')
 def hello_name(name):
     return "Hello, {}!".format(name)
@@ -70,8 +78,6 @@ def getTree():
     page = ""
     treeList = gen.getRoadIndex(roadkey)
     for name in treeList:
-        #name = setLabel(name, roadkey, "b")
-        #page = "{}<p>{}</p>".format(page, name)
         page = "{}<option value=\"{}\">{}</option>".format(page, name, name)
     return page
 
@@ -79,3 +85,8 @@ def getTree():
 def video_feed():
     return Response(frameGen(),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
+
+@app.route('/monitor_img')
+def monitor_img():
+    byte_img = getMonitorImg()
+    return byte_img
