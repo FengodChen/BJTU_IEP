@@ -5,8 +5,8 @@ import hashlib
 class HostConnection:
     def __init__(self, ip:str, port:int):
         self.addr = (ip, port)
-        #self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket = socket.socket()
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         while (True):
             try:
                 self.socket.connect(self.addr)
@@ -49,10 +49,12 @@ class HostConnection:
             self.working_flag = False
             return succeed
     
-    def recv(self) -> (bool, str):
+    def recv(self, skip = False) -> (bool, str):
         while (self.working_flag):
+            if (skip):
+                break
             time.sleep(0.1)
-        if (not self.working_flag):
+        try:
             self.working_flag = True
 
             a = self.socket.recv(1)
@@ -84,3 +86,12 @@ class HostConnection:
 
             self.working_flag = False
             return (succeed, data)
+        except Exception as e:
+            print("Error on Recv: {}".format(e))
+            while (True):
+                try:
+                    self.socket.connect(self.addr)
+                    break
+                except:
+                    time.sleep(0.05)
+            self.recv(skip=True)

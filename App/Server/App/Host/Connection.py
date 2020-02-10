@@ -9,19 +9,17 @@ import base64
 def Connect(send_addr, recv_addr, send_server_first):
     cor = Local_Socket.Correspond(send_addr, recv_addr)
     if (send_server_first):
-        print("{} Waiting for connect".format(send_addr))
+        print("[Server Host Send]{} Waiting for connect".format(send_addr))
         cor.start_send_server()
-        while (not cor.start_receive_server()):
-            time.sleep(1)
-            print("{} Waiting for connect".format(recv_addr))
-        print("{} Connected{}".format(send_addr, recv_addr))
+        print("[Server Host Receive]{} Waiting for connect".format(recv_addr))
+        cor.start_receive_server()
+        print("[Server Host]{} Connected{}".format(send_addr, recv_addr))
     else:
-        while (not cor.start_receive_server()):
-            time.sleep(1)
-            print("{} Waiting for connect".format(recv_addr))
-        print("{} Waiting for connect".format(send_addr))
+        print("[Server Host Receive]{} Waiting for connect".format(recv_addr))
+        cor.start_receive_server()
+        print("[Server Host Send]{} Waiting for connect".format(send_addr))
         cor.start_send_server()
-        print("{} Connected{}".format(send_addr, recv_addr))
+        print("[Server Host]{} Connected{}".format(send_addr, recv_addr))
     return cor
 
 def Connect_Monitor_1():

@@ -66,17 +66,21 @@ class Correspond:
             self.send_server_check = True
             return True
         except Exception as e:
-            print(e)
+            #print(e)
             return False
 
-    def start_receive_server(self):
-        try:
-            self.socket_r.connect(self.recv_addr)
-            self.recv_server_check = True
-            return True
-        except Exception as e:
-            print(e)
-            return False
+    def start_receive_server(self, sleeptime:float=1.0, timeout:int=float('+inf')):
+        clk = 0
+        while (clk < timeout):
+            try:
+                self.socket_r.connect(self.recv_addr)
+                self.recv_server_check = True
+                return True
+            except Exception as e:
+                #print(e)
+                time.sleep(sleeptime)
+                clk += 1
+        return False
     
     def send(self, data = None) -> bool:
         time.sleep(0.01)

@@ -85,9 +85,8 @@ class VitualMonitor_Socket_Threading(threading.Thread):
         self.correspond = Local_Socket.Correspond(send_addr, recv_addr)
     
     def run(self):
-        while (not self.correspond.start_receive_server()):
-            time.sleep(1)
-            print("[Vitual Monitor Receive]{} Waiting for connect".format(self.recv_addr))
+        print("[Vitual Monitor Receive]{} Waiting for connect".format(self.recv_addr))
+        self.correspond.start_receive_server()
         print("[Vitual Monitor Send]{} Waiting for connect".format(self.send_addr))
         self.correspond.start_send_server()
         print("[Vitual Monitor]{} Connected{}".format(self.send_addr, self.recv_addr))

@@ -15,7 +15,7 @@ class LoopMonitor_Thread(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
         self.nextFlag = False
-        self.strPic_base64 = None
+        self.strPic_base64 = 'None'
     
     def __iter__(self):
         return self
@@ -73,16 +73,12 @@ class WebHost(socketserver.BaseRequestHandler):
         self.socket = self.request
         self.working_flag = False
         while True:
-            try:
-                (succ, data) = self.recv()
-                if (succ):
-                    rsp = self.operate(data)
-                    self.send(rsp)
-                else:
-                    continue
-            except Exception as e:
-                print(e)
-                break
+            (succ, data) = self.recv()
+            if (succ):
+                rsp = self.operate(data)
+                self.send(rsp)
+            else:
+                continue
 
     def operate(self, order:str) -> str:
         if (order == 'getVideo'):
@@ -90,7 +86,7 @@ class WebHost(socketserver.BaseRequestHandler):
         elif (order == '?'):
             return "?"
         else:
-            return ""
+            return "!"
     
     def send(self, data:str) -> (bool, str):
         while (self.working_flag):

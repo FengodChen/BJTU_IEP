@@ -68,9 +68,8 @@ class GetLaneStatisticThread(threading.Thread):
     def run(self):
         print("{} Waiting for connect".format(self.send_addr))
         self.cor.start_send_server()
-        while (not self.cor.start_receive_server()):
-            time.sleep(1)
-            print("{} Waiting for connect".format(self.recv_addr))
+        print("{} Waiting for connect".format(self.recv_addr))
+        self.cor.start_receive_server()):
         print("{} Connected{}".format(self.send_addr, self.recv_addr))
         startTime = time.time()
         endTime = time.time() + self.clock_minute * 60
@@ -135,9 +134,8 @@ class StatisticThread(threading.Thread):
     def run(self):
         print("{} Waiting for connect".format(self.send_addr))
         self.cor.start_send_server()
-        while (not self.cor.start_receive_server()):
-            time.sleep(1)
-            print("{} Waiting for connect".format(self.recv_addr))
+        print("{} Waiting for connect".format(self.recv_addr))
+        self.cor.start_receive_server()
         print("{} Connected{}".format(self.send_addr, self.recv_addr))
         startTime = time.time()
         endTime = time.time() + self.clock_minute * 60
@@ -180,9 +178,8 @@ class ServerThread(threading.Thread):
         self.cor = Local_Socket.Correspond(self.send_addr, self.recv_addr)
     
     def run(self):
-        while (not self.cor.start_receive_server()):
-            time.sleep(1)
-            print("{} Waiting for connect".format(self.recv_addr))
+        print("{} Waiting for connect".format(self.recv_addr))
+        self.cor.start_receive_server()
         print("{} Waiting for connect".format(self.send_addr))
         self.cor.start_send_server()
         print("{} Connected{}".format(self.send_addr, self.recv_addr))

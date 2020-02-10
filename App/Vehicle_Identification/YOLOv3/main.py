@@ -41,9 +41,8 @@ class MonitorThread(threading.Thread):
     def run(self):
         print("{} Waiting for connect".format(self.send_addr))
         self.monitor_cor.start_send_server()
-        while (not self.monitor_cor.start_receive_server()):
-            time.sleep(1)
-            print("{} Waiting for connect".format(self.recv_addr))
+        print("{} Waiting for connect".format(self.recv_addr))
+        self.monitor_cor.start_receive_server()
         print("{} Connected{}".format(self.send_addr, self.recv_addr))
         self.connected = True
 
@@ -57,9 +56,8 @@ class LaneLineThread(threading.Thread):
         self.monitorThread = monitorThread
     
     def run(self):
-        while (not self.yolo_cor.start_receive_server()):
-            time.sleep(1)
-            print("{} Waiting for connect".format(self.recv_addr))
+        print("{} Waiting for connect".format(self.recv_addr))
+        self.yolo_cor.start_receive_server()
         print("{} Waiting for connect".format(self.send_addr))
         self.yolo_cor.start_send_server()
         print("{} Connected{}".format(self.send_addr, self.recv_addr))
