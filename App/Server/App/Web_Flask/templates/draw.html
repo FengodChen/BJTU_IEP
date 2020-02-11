@@ -1,25 +1,56 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title> Video </title>
+        <title> Draw Picture </title>
         <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=10.0,minimum-scale=0.1,user-scalable=yes">
         <script src="{{ url_for("static",filename='js/jquery-3.4.1.js')}}"></script>
         <script>
-            //var canvas = $('#drawCanvas');
-            //var context = canvas.getContext('2d');
-            $('#drawCanvas').click(function(e){
-                //alert("[X]: " + e.clientX + " [Y]: " + e.clientY);
-                alert("Hello");
+            var Point = function(x_, y_) { return {x:x_, y:y_} }
+            var pointList = new Array()
+
+            $(document).ready(function(){
+                var canvas = $("#drawCanvas");
+                var context = canvas[0].getContext('2d');
+                var abs_y = canvas.offset().top;
+                var abs_x = canvas.offset().left;
+
+                var mouseFlag = false;
+
+                canvas.click(function(e){
+                    rel_x = e.clientX - abs_x;
+                    rel_y = e.clientY - abs_y;
+                    if (!mouseFlag) {
+                        mouseFlag = true;
+                        tmp_x = rel_x;
+                        tmp_y = rel_y;
+                        pointList.push(Point(rel_x, rel_y))
+                    } else {
+                        context.beginPath();
+                        context.moveTo(tmp_x, tmp_y);
+                        context.lineTo(rel_x, rel_y);
+                        tmp_x = rel_x;
+                        tmp_y = rel_y;
+                        context.strokeStyle="red";
+                        context.stroke();
+                        pointList.push(Point(rel_x, rel_y))
+                    }
+                });
+
+                canvas.keydown(function(e){
+                    alert(e.which())
+                });
             });
         </script>
     </head>
     <body>
+        <p> OK </p>
         <div>
-            <h1> Draw </h1>
-            <img id="drawImg" src="/monitor_img" width="500" height="500"> </img>
-            <h2> Draw Canvas </h2>
+            <!--img id="drawImg" src="/monitor_img" width="500" height="500"> </img>
+            <h2> Draw Canvas </h2-->
+            <p> Hello </p>
             <canvas id="drawCanvas" width="500" height="500", style="border:1px solid #c3c3c3;"></canvas>
         </div>
-
     </body>
+
+
 </html>
