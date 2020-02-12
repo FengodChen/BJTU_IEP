@@ -10,6 +10,8 @@ import time
 import threading
 import Local_Socket
 import Local_Socket_Config
+import os
+import copy
 
 class VideoOperator:
     def __init__(self):
@@ -114,6 +116,14 @@ class VitualMonitor_Socket_Threading(threading.Thread):
                     time_sec = float(rec[5:])
                     frame_base64 = self.videoOperator.getFrame_base64(road_name, time_sec)
                     self.correspond.send(frame_base64)
+            if (rec == 'Road List'):
+                roadList = os.listdir("/Share/Vitual_Monitor_Video/")
+                roadList_str = ""
+                for road in roadList:
+                    if (".mp4" == road[-4:]):
+                        roadList_str = "{}{},".format(roadList_str, road[:-4])
+                self.correspond.send(roadList_str[:-1])
+
 
 def connectVI(video_opr):
     vms_t = VitualMonitor_Socket_Threading(video_opr, Local_Socket_Config.yolo_monitor_addr2, Local_Socket_Config.yolo_monitor_addr1)

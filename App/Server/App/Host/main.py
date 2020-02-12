@@ -50,16 +50,64 @@ class LoopMonitor_Thread(threading.Thread):
 class OperateMonitor_Thread(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
+        self.orderQueue = []
+        self.ansDict = {}
 
     def run(self):
         cor = Connection.Connect_Monitor_2()
+        while (True):
+            if (len(self.orderQueue) == 0):
+                time.sleep(1)
+                continue
+            (order, key) = self.takeOrder()
+            if (order == 'getMonitorList'):
+                cor.send('Road List')
+                roadList_str = cor.receive()
+                self.insertAns(roadList_str, key)
+    
+    def insertOrder(self, order:str, key:int):
+        self.orderQueue.append((order, key))
+    
+    def takeOrder(self) -> (str, int):
+        order_key = self.orderQueue.pop(0)
+        return order_key
+    
+    def insertAns(self, ans:str, key:int):
+        self.ansDict[key] = ans
+    
+    def getAns(self, key:int) -> str:
+        if (self.finished(key)):
+            ans = self.ansDict.pop(key)
+            return ans
+        else:
+            return ""
+    
+    def finished(self, key:int) -> bool:
+        if (key in self.ansDict):
+            return True
+        else:
+            return False
 
 class OperateLaneLine_Thread(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
+        self.orderQueue = []
 
     def run(self):
         cor = Connection.Connect_LaneLine()
+        while (True):
+            if (len(self.orderQueue) == 0):
+                time.sleep(1)
+                continue
+            order = self.takeOrder()
+
+    def insertOrder(self, order:str):
+        self.orderQueue.append(orderStr)
+    
+    def takeOrder(self) -> str:
+        order = self.orderQueue[0]
+        self.orderQueue.remove(order)
+        return order
 
 lm = LoopMonitor_Thread()
 om = OperateMonitor_Thread()
@@ -83,10 +131,21 @@ class WebHost(socketserver.BaseRequestHandler):
     def operate(self, order:str) -> str:
         if (order == 'getVideo'):
             return next(lm)
-        elif (order == '?'):
-            return "?"
+        elif (order == 'getMonitorList'):
+            return self.getMonitorList()
         else:
             return "!"
+    
+    def getKey(self) -> int:
+        return int(time.time()*10000000)
+    
+    def getMonitorList(self) -> str:
+        key = self.getKey()
+        om.insertOrder('getMonitorList', key)
+        while (True):
+            if (om.finished(key)):
+                return om.getAns(key)
+            time.sleep(0.1)
     
     def send(self, data:str) -> (bool, str):
         while (self.working_flag):

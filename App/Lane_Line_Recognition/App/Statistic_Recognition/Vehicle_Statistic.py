@@ -171,11 +171,12 @@ class StatisticThread(threading.Thread):
             endTime = time.time()
 
 class ServerThread(threading.Thread):
-    def __init__(self):
+    def __init__(self, statisticThread):
         threading.Thread.__init__(self)
         self.send_addr = Local_Socket_Config.server_laneline_addr2
         self.recv_addr = Local_Socket_Config.server_laneline_addr1
         self.cor = Local_Socket.Correspond(self.send_addr, self.recv_addr)
+        self.statisticThread = statisticThread
     
     def run(self):
         print("{} Waiting for connect".format(self.recv_addr))
@@ -192,8 +193,8 @@ if __name__ == "__main__":
     s_path = "/Share/laneline_data/statistic.db"
     l_path = "/Share/laneline_data/laneArea.db"
     v_path = "/Share/vehicle_data/location.db"
+    # TODO
     clock_minute = 0.1
-    roadList = ["G107", "G108", "G109"]
     #sticThread = StatisticThread(s_path, v_path, clock_minute)
     sticThread = StatisticThread(l_path, v_path, clock_minute)
     serverThread = ServerThread()

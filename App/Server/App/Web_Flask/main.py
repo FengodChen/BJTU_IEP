@@ -56,6 +56,12 @@ def frameGen():
 def mainWeb():
     return "<h1>Hello Main</h1>"
 
+@app.route('/monitor')
+def monitor():
+    Send('getMonitorList')
+    monitorStr = Recv()
+    return "<p>{}</p>".format(monitorStr)
+
 @app.route('/searchRoad')
 def searchRoad():
     return render_template('searchRoad.html')
