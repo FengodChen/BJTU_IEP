@@ -14,7 +14,7 @@ def setLabel(text:str, setStr:str, label:str) -> str:
     return tmp
 
 app = Flask(__name__)
-gen = sqliteData.Generator()
+sql_gen = sqliteData.Generator()
 sk = socketConnect.HostConnection('127.0.0.1', 8097)
 
 def Send(data:str) -> None:
@@ -78,14 +78,26 @@ def draw_pic():
 def hello_name(name):
     return "Hello, {}!".format(name)
 
-@app.route('/getTree', methods=['POST'])
+@app.route('/post/getTree', methods=['POST'])
 def getTree():
     roadkey = request.form.get("roadkey")
-    page = ""
-    treeList = gen.getRoadIndex(roadkey)
+    page = "<option value=\"--\">--</option>"
+    treeList = sql_gen.getRoadIndex(roadkey)
     for name in treeList:
         page = "{}<option value=\"{}\">{}</option>".format(page, name, name)
     return page
+
+@app.route('/post/getTimeline', methods=['POST'])
+def getTimeline():
+    roadname = request.form.get("roadname")
+    if roadname == '--':
+        return "<p>--</p>"
+    else:
+        list_timeline = sql_gen.getRoadTimeline(roadname)
+        page = ""
+        for timeline in list_timeline:
+            page = "{}<p>{}</p>".format(page, timeline)
+        return page
 
 @app.route('/video_feed')
 def video_feed():

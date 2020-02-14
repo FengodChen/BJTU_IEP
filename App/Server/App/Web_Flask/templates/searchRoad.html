@@ -7,9 +7,17 @@
             $(document).ready(function(){
                 $("#roadkeys").keyup(function(){
                     roadkeys = $("#roadkeys").val();
-                    $.post("/getTree", 
+                    $.post("/post/getTree", 
                     {roadkey:roadkeys}, function(recv){
-                        $("#roadans").html(recv)
+                        $("#roadans").html(recv);
+                    });
+                });
+
+                $('#roadans').change(function() {
+                    var selectRoad = $('#roadans').find("option:selected").text()
+                    $.post("/post/getTimeline",
+                    {roadname:selectRoad}, function(recv){
+                        $("#timeline").html(recv);
                     });
                 });
             });
@@ -22,5 +30,6 @@
         <div>
             <select id="roadans"></select>
         </div>
+        <div id="timeline"></div>
     </body>
 </html>
