@@ -99,6 +99,15 @@ def getTimeline():
             page = "{}<p>{}</p>".format(page, timeline)
         return page
 
+@app.route('/post/manualDraw', methods=['POST'])
+def manualDraw():
+    pointList_json = request.form.get("pointList_json")
+    c_w = request.form.get("w")
+    c_h = request.form.get("h")
+    Send("manualDraw:{} size:{}x{}".format(pointList_json, c_w, c_h))
+    draw_img = Recv()
+    return draw_img
+
 @app.route('/video_feed')
 def video_feed():
     return Response(frameGen(),

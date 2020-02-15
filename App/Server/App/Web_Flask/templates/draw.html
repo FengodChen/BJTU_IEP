@@ -10,6 +10,8 @@
 
             $(document).ready(function(){
                 var canvas = $("#drawCanvas");
+                var c_h = canvas.attr("height")
+                var c_w = canvas.attr("width")
                 var context = canvas[0].getContext('2d');
                 var abs_y = canvas.offset().top;
                 var abs_x = canvas.offset().left;
@@ -36,19 +38,49 @@
                     }
                 });
 
-                canvas.keydown(function(e){
-                    alert(e.which())
+                $('#road_selection').change(function() {
+                    var selectRoad = $('#road_selection').find("option:selected").text()
+                    $("#road_function").attr("value", selectRoad)
                 });
+
+                $("#submit").click(function() {
+                    pointList_json = JSON.stringify(pointList);
+                    $.post("/post/manualDraw",
+                    {pointList_json:pointList_json, w:c_w, h:c_h}, function(recv){
+                        // TODO
+                        alert(recv)
+                    });
+                    mouseFlag = false
+                    pointList = new Array();
+                });
+
+                $("#refresh").click(function() {
+                    var roadImg = new Image();
+                    roadImg.src = '/video_feed';
+                    context.drawImage(roadImg, 0, 0, c_w, c_h);
+                    mouseFlag = false
+                    pointList = new Array();
+                });
+
             });
         </script>
     </head>
     <body>
-        <p> OK </p>
         <div>
             <!--img id="drawImg" src="/monitor_img" width="500" height="500"> </img>
             <h2> Draw Canvas </h2-->
-            <p> Hello </p>
-            <canvas id="drawCanvas" width="500" height="500", style="border:1px solid #c3c3c3;"></canvas>
+            <canvas id="drawCanvas" width="800" height="640", style="border:1px solid #c3c3c3;"></canvas>
+        </div>
+        <div>
+            <select id="road_selection">
+                <option value="--"> -- </option>
+                <option value="Turn Left"> Turn Left </option>
+                <option value="Turn Right"> Turn Right </option>
+                <option value="Ahead"> Ahead </option>
+            </select>
+            <input type="text" id="road_function" />
+            <button id="submit"> Submit </button>
+            <button id="refresh"> Refresh </button>
         </div>
     </body>
 

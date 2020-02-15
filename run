@@ -23,7 +23,9 @@ function start() {
     docker start ${VI_NAME} \
         && docker exec -id ${VI_NAME} chmod a+x main.py \
         && docker exec -id ${VI_NAME} ./main.py
-    docker start ${LLR_NAME}
+    docker start ${LLR_NAME} \
+        && docker exec -id ${LLR_NAME} chmod a+x ./Statistic_Recognition \
+        && docker exec -id ${LLR_NAME} ./Statistic_Recognition/Vehicle_Statistic.py
     if [ "$1" = "-v" ]; then
         docker start ${VM_NAME} \
             && docker exec -id ${VM_NAME} chmod a+x VideoInterface.py \

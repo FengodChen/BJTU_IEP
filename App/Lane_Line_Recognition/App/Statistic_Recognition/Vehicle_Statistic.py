@@ -1,3 +1,10 @@
+#! /usr/bin/python3
+
+import sys
+sys.path.insert(0, '/App/Hough')
+sys.path.insert(0, '/Share/PythonLib')
+sys.path.insert(0, '/App/Statistic_Recognition')
+
 import sqlite3
 import threading
 import time
@@ -69,7 +76,7 @@ class GetLaneStatisticThread(threading.Thread):
         print("{} Waiting for connect".format(self.send_addr))
         self.cor.start_send_server()
         print("{} Waiting for connect".format(self.recv_addr))
-        self.cor.start_receive_server()):
+        self.cor.start_receive_server()
         print("{} Connected{}".format(self.send_addr, self.recv_addr))
         startTime = time.time()
         endTime = time.time() + self.clock_minute * 60
@@ -130,6 +137,18 @@ class StatisticThread(threading.Thread):
         self.vehicleDB = SQLiteOperator.VehicleOperator(vehicleDB_path, self.laneArea, False, False)
         
         self.roadList = self.laneArea.getRoadList()
+        self.roadListTmp = None
+    
+    def getStatRoadList(self):
+        return self.laneArea.getRoadList()
+    
+    def setRoadList(self, roadList:list):
+        self.roadListTmp = roadList
+    
+    def checkChange(self):
+        if (not self.roadListTmp == None):
+            self.roadList = self.roadListTmp
+            self.roadListTmp = None
     
     def run(self):
         print("{} Waiting for connect".format(self.send_addr))
@@ -137,6 +156,10 @@ class StatisticThread(threading.Thread):
         print("{} Waiting for connect".format(self.recv_addr))
         self.cor.start_receive_server()
         print("{} Connected{}".format(self.send_addr, self.recv_addr))
+
+        while (self.roadList == None):
+            time.sleep(0.1)
+
         startTime = time.time()
         endTime = time.time() + self.clock_minute * 60
         while (True):
@@ -145,13 +168,14 @@ class StatisticThread(threading.Thread):
             if (sleep_seconds < 0):
                 sleep_seconds = 0
             time.sleep(sleep_seconds)
+            self.checkChange()
 
             startTime = time.time()
 
             for roadName in self.roadList:
                 nowDate = Vehicle_Tree.getDate()
                 nowTime = Vehicle_Tree.getTime()
-                print("NeedPredict: {}".format(roadName))
+                #print("NeedPredict: {}".format(roadName))
                 self.cor.send("NeedPredict:{}".format(roadName))
                 rec = self.cor.receive()
                 if ("ERROR:" in rec):
@@ -161,7 +185,7 @@ class StatisticThread(threading.Thread):
                     sticArray = []
                     for name in ["car", "bus", "truck"]:
                         sticArray.append(sticDict[name])
-                    # TODO
+                    # TODO set lane name
                     laneArray = []
                     for i in range(len(sticArray[0])):
                         laneArray.append("Road{}".format(i+1))
@@ -187,7 +211,9 @@ class ServerThread(threading.Thread):
 
         while (True):
             rec = self.cor.receive()
-            #TODO
+            if ('manualDraw:' in rec):
+                # TODO
+                self.cor.send("From Vehicle Statistic: {}".format(rec))
 
 if __name__ == "__main__":
     s_path = "/Share/laneline_data/statistic.db"
@@ -197,7 +223,7 @@ if __name__ == "__main__":
     clock_minute = 0.1
     #sticThread = StatisticThread(s_path, v_path, clock_minute)
     sticThread = StatisticThread(l_path, v_path, clock_minute)
-    serverThread = ServerThread()
+    serverThread = ServerThread(sticThread)
     sticThread.start()
     serverThread.start()
     #sticThread.addRoad(roadList)

@@ -55,7 +55,7 @@ class OperateMonitor_Thread(threading.Thread):
 
     def run(self):
         cor = Connection.Connect_Monitor_2()
-        while (True):
+        while(True):
             if (len(self.orderQueue) == 0):
                 time.sleep(1)
                 continue
@@ -92,6 +92,7 @@ class OperateLaneLine_Thread(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
         self.orderQueue = []
+        self.ansDict = {}
 
     def run(self):
         cor = Connection.Connect_LaneLine()
@@ -99,15 +100,34 @@ class OperateLaneLine_Thread(threading.Thread):
             if (len(self.orderQueue) == 0):
                 time.sleep(1)
                 continue
-            order = self.takeOrder()
+            (order, key) = self.takeOrder()
+            if ('manualDraw:' in order):
+                cor.send(order)
+                draw_img = cor.receive()
+                self.insertAns(draw_img, key)
 
-    def insertOrder(self, order:str):
-        self.orderQueue.append(orderStr)
+    def insertOrder(self, order:str, key:int):
+        self.orderQueue.append((order, key))
     
-    def takeOrder(self) -> str:
-        order = self.orderQueue[0]
-        self.orderQueue.remove(order)
-        return order
+    def takeOrder(self) -> (str, int):
+        order_key = self.orderQueue.pop(0)
+        return order_key
+    
+    def insertAns(self, ans:str, key:int):
+        self.ansDict[key] = ans
+    
+    def getAns(self, key:int) -> str:
+        if (self.finished(key)):
+            ans = self.ansDict.pop(key)
+            return ans
+        else:
+            return ""
+    
+    def finished(self, key:int) -> bool:
+        if (key in self.ansDict):
+            return True
+        else:
+            return False
 
 lm = LoopMonitor_Thread()
 om = OperateMonitor_Thread()
@@ -133,6 +153,8 @@ class WebHost(socketserver.BaseRequestHandler):
             return next(lm)
         elif (order == 'getMonitorList'):
             return self.getMonitorList()
+        elif ('manualDraw:' in order):
+            return self.manualDraw(order)
         else:
             return "!"
     
@@ -145,6 +167,14 @@ class WebHost(socketserver.BaseRequestHandler):
         while (True):
             if (om.finished(key)):
                 return om.getAns(key)
+            time.sleep(0.1)
+    
+    def manualDraw(self, order:str):
+        key = self.getKey()
+        ol.insertOrder(order, key)
+        while (True):
+            if (ol.finished(key)):
+                return ol.getAns(key)
             time.sleep(0.1)
     
     def send(self, data:str) -> (bool, str):
