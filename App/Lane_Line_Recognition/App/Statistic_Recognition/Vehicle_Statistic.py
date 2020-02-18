@@ -9,6 +9,8 @@ import sqlite3
 import threading
 import time
 import numpy as np
+import json
+import base64
 
 import Local_Socket
 import Local_Socket_Config
@@ -213,7 +215,28 @@ class ServerThread(threading.Thread):
             rec = self.cor.receive()
             if ('manualDraw:' in rec):
                 # TODO
-                self.cor.send("From Vehicle Statistic: {}".format(rec))
+                [title, pointList_json, size, img_bytes_base64_str] = rec.split("<|||||>")
+                (w, h) = size.split("x")
+                w = int(w)
+                h = int(h)
+                pointList = json.loads(pointList_json)
+                img_bytes_base64_bytes = bytes(img_bytes_base64_str, encoding='utf-8')
+                img_bytes = base64.decodebytes(img_bytes_base64_bytes)
+                s = base64.encodebytes(img_bytes)
+                ss = str(s, 'utf-8')
+                self.cor.send("{}<|||||>{}".format(ss, "True"))
+                '''
+                try:
+                    img_bytes = base64.decodebytes(img_bytes_base64_bytes)
+
+                    img_bytes_base64_bytes = base64.encodebytes(img_bytes)
+                    img_bytes_base64_str = str(img_bytes_base64_bytes, encoding='utf-8')
+
+                    self.cor.send(img_bytes_base64_str)
+                except Exception as e:
+                    self.cor.send(e)
+                '''
+                #self.cor.send(img_bytes_base64_str)
 
 if __name__ == "__main__":
     s_path = "/Share/laneline_data/statistic.db"

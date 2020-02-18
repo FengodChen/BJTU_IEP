@@ -17,6 +17,8 @@ app = Flask(__name__)
 sql_gen = sqliteData.Generator()
 sk = socketConnect.HostConnection('127.0.0.1', 8097)
 
+monitor_image = b"None"
+
 def Send(data:str) -> None:
     succ = False
     while (not succ):
@@ -40,9 +42,14 @@ def decodeBase64Img(img:str) -> bytes:
         return b'0'
 
 def getMonitorImg() -> bytes:
-    Send("getVideo")
-    strPic_base64 = Recv()
-    byte_pic = decodeBase64Img(strPic_base64)
+    byte_pic = b'0'
+    while (True):
+        Send("getVideo")
+        strPic_base64 = Recv()
+        byte_pic = decodeBase64Img(strPic_base64)
+        if (not byte_pic == b'0'):
+            break
+        time.sleep(0.1)
     return byte_pic
 
 def frameGen():
@@ -104,9 +111,23 @@ def manualDraw():
     pointList_json = request.form.get("pointList_json")
     c_w = request.form.get("w")
     c_h = request.form.get("h")
-    Send("manualDraw:{} size:{}x{}".format(pointList_json, c_w, c_h))
-    draw_img = Recv()
-    return draw_img
+    img_src = request.form.get("img_base64")
+    img_bytes_base64_str = img_src[len('data:image/jpeg;base64, '):].replace("%0A", "\n")
+    # 'manualDraw:<|||||>pointList_json <|||||> WxH <|||||> img_bytes_base64_str'
+    Send("manualDraw:<|||||>{}<|||||>{}x{}<|||||>{}".format(pointList_json, c_w, c_h, img_bytes_base64_str))
+    [img_bytes_base64_str, inf] = Recv().split("<|||||>")
+    #print("From Img Src Base64 String [Str]: {}".format(img_bytes_base64_str))
+    #print("From Img Src Base64 String [Len]: {}".format(len(img_bytes_base64_str)))
+    return '<img src="data:image/jpeg;base64, {}" />'.format(img_bytes_base64_str)
+
+@app.route('/post/refreshImg', methods=['POST'])
+def refreshImg():
+    img_bytes = getMonitorImg()
+    img_bytes_base64_bytes = base64.encodebytes(img_bytes)
+    img_bytes_base64_str = bytes.decode(img_bytes_base64_bytes, 'utf-8')
+    #print("From Monitor Base64 String [Str]: {}".format(img_bytes_base64_str.replace("\n", "%0A")))
+    #print("From Monitor Base64 String [Len]: {}".format(len(img_bytes_base64_str.replace("\n", "%0A"))))
+    return 'data:image/jpeg;base64, {}'.format(img_bytes_base64_str)
 
 @app.route('/video_feed')
 def video_feed():

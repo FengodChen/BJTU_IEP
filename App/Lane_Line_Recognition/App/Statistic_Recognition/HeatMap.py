@@ -62,6 +62,58 @@ class HeatMap:
     def threading(self, min_t, max_t):
         (ret, self.img) = cv.threshold(self.img, min_t, max_t, cv.THRESH_BINARY)
 
+class ManualGetLaneCV:
+    def __init__(self, img_path, dt_show = 15, windowsName = "Manual Get"):
+        
+        self.img_orgi = cv.imread(img_path)
+        self.img_mask = self.img_orgi.copy()
+        self.img_copy = self.img_orgi.copy()
+
+        (h, w, c) = np.shape(self.img_orgi)
+        self.img_flag = np.zeros((h, w), dtype=np.uint8)
+
+        self.pointlist = []
+        self.lanelist = []
+
+        self.dt_show = dt_show
+        self.level = 0
+        self.windowsName = windowsName
+
+    def mouseCall(self, event, x, y, flags, param):
+        if (event == cv.EVENT_LBUTTONDOWN):
+            #cv.circle(self.img_copy, (x, y), 4, (0, 0, 0), 5)
+            self.pointlist.append([x, y])
+            if (len(self.pointlist) >= 2):
+                cv.line(self.img_copy, tuple(self.pointlist[-2]), tuple(self.pointlist[-1]), (0,255,0), 3)
+            cv.imshow(self.windowsName, self.img_copy)
+        elif (event == cv.EVENT_RBUTTONDOWN):
+            if (len(self.pointlist) >= 3):
+                tri = np.array([self.pointlist], dtype=np.int32)
+                deep = self.dt_show * self.level
+                cv.fillPoly(self.img_mask, tri, (deep) * 3)
+                cv.fillPoly(self.img_flag, tri, self.level)
+                self.img_copy = self.img_mask.copy()
+
+                self.pointlist.clear()
+
+                cv.imshow(self.windowsName, self.img_copy)
+
+    def getLane(self):
+        cv.namedWindow(self.windowsName, cv.WINDOW_NORMAL)
+        cv.setMouseCallback(self.windowsName, self.mouseCall)
+        cv.imshow(self.windowsName, self.img_copy)
+        while (True):
+            key = cv.waitKey(1)
+            if (key == 27):
+                break
+            elif (key >= ord("0") and key <= ord("9")):
+                self.level = int(chr(key))
+        cv.destroyAllWindows()
+    
+    def save(self, db_path, roadName):
+        db = SQLiteOperator.LaneAreaOperator(db_path, True)
+        db.write(roadName, self.img_flag)
+
 class ManualGetLane:
     def __init__(self, img_path, dt_show = 15, windowsName = "Manual Get"):
         
@@ -123,5 +175,5 @@ def getDefaultHeatMap():
     return s
 
 def getDefaultManual():
-    m = ManualGetLane("/home/fengodchen/WorkSpace/BJTU_IEP/Share/out.jpg")
+    m = ManualGetLaneCV("/home/fengodchen/WorkSpace/BJTU_IEP/Share/out.jpg")
     return m

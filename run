@@ -14,22 +14,23 @@ function help() {
 }
 
 function start() {
-    docker start ${SERVER_NAME} \
-        && docker exec -id ${SERVER_NAME} service apache2 start \
-        && docker exec -id ${SERVER_NAME} chmod a+x Host/main.py \
-        && docker exec -id ${SERVER_NAME} ./Host/main.py
-    #docker start ${VI_NAME} \
-    #    && docker exec -id ${VI_NAME} ./predict
-    docker start ${VI_NAME} \
-        && docker exec -id ${VI_NAME} chmod a+x main.py \
-        && docker exec -id ${VI_NAME} ./main.py
-    docker start ${LLR_NAME} \
-        && docker exec -id ${LLR_NAME} chmod a+x ./Statistic_Recognition \
-        && docker exec -id ${LLR_NAME} ./Statistic_Recognition/Vehicle_Statistic.py
+    docker start ${SERVER_NAME}
+    docker exec -id ${SERVER_NAME} chmod a+x Host/main.py
+    docker exec -id ${SERVER_NAME} ./Host/main.py
+    docker exec -id ${SERVER_NAME} service apache2 start 
+
+    docker start ${VI_NAME}
+    docker exec -id ${VI_NAME} chmod a+x main.py
+    docker exec -id ${VI_NAME} ./main.py
+
+    docker start ${LLR_NAME}
+    docker exec -id ${LLR_NAME} chmod a+x ./Statistic_Recognition
+    docker exec -id ${LLR_NAME} ./Statistic_Recognition/Vehicle_Statistic.py
+
     if [ "$1" = "-v" ]; then
-        docker start ${VM_NAME} \
-            && docker exec -id ${VM_NAME} chmod a+x VideoInterface.py \
-            && docker exec -id ${VM_NAME} ./VideoInterface.py
+        docker start ${VM_NAME}
+        docker exec -id ${VM_NAME} chmod a+x VideoInterface.py
+        docker exec -id ${VM_NAME} ./VideoInterface.py
     fi
 }
 
