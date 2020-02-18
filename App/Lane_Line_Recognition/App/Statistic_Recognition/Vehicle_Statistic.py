@@ -20,6 +20,8 @@ import Vehicle_Data
 import Vehicle_Generator
 
 import SQLiteOperator
+
+import HeatMap
     
 class SQLOperator:
     def __init__(self, statisticDB_path, vehicleDB_path):
@@ -220,23 +222,9 @@ class ServerThread(threading.Thread):
                 w = int(w)
                 h = int(h)
                 pointList = json.loads(pointList_json)
-                img_bytes_base64_bytes = bytes(img_bytes_base64_str, encoding='utf-8')
-                img_bytes = base64.decodebytes(img_bytes_base64_bytes)
-                s = base64.encodebytes(img_bytes)
-                ss = str(s, 'utf-8')
-                self.cor.send("{}<|||||>{}".format(ss, "True"))
-                '''
-                try:
-                    img_bytes = base64.decodebytes(img_bytes_base64_bytes)
-
-                    img_bytes_base64_bytes = base64.encodebytes(img_bytes)
-                    img_bytes_base64_str = str(img_bytes_base64_bytes, encoding='utf-8')
-
-                    self.cor.send(img_bytes_base64_str)
-                except Exception as e:
-                    self.cor.send(e)
-                '''
-                #self.cor.send(img_bytes_base64_str)
+                mg = HeatMap.ManualGetLane(img_bytes_base64_str, w, h)
+                img_bytes_base64_str = mg.drawMask(pointList)
+                self.cor.send("{}<|||||>{}".format(img_bytes_base64_str, "True"))
 
 if __name__ == "__main__":
     s_path = "/Share/laneline_data/statistic.db"
