@@ -105,6 +105,9 @@ class OperateLaneLine_Thread(threading.Thread):
                 cor.send(order)
                 draw_img = cor.receive()
                 self.insertAns(draw_img, key)
+            elif ('newDraw:' in order):
+                cor.send(order)
+                self.insertAns('0', key)
 
     def insertOrder(self, order:str, key:int):
         self.orderQueue.append((order, key))
@@ -154,7 +157,9 @@ class WebHost(socketserver.BaseRequestHandler):
         elif (order == 'getMonitorList'):
             return self.getMonitorList()
         elif ('manualDraw:' in order):
-            return self.manualDraw(order)
+            return self.heatMap(order)
+        elif ('newDraw:' in order):
+            return self.heatMap(order)
         else:
             return "!"
     
@@ -169,7 +174,7 @@ class WebHost(socketserver.BaseRequestHandler):
                 return om.getAns(key)
             time.sleep(0.1)
     
-    def manualDraw(self, order:str):
+    def heatMap(self, order:str):
         key = self.getKey()
         ol.insertOrder(order, key)
         while (True):

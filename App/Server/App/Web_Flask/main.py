@@ -31,6 +31,10 @@ def Recv() -> str:
         (succ, data) = sk.recv()
     return data
 
+def SafeSend(data:str) -> str:
+    Send(data)
+    return Recv()
+
 print("Threading")
 
 def decodeBase64Img(img:str) -> bytes:
@@ -109,24 +113,21 @@ def getTimeline():
 @app.route('/post/manualDraw', methods=['POST'])
 def manualDraw():
     pointList_json = request.form.get("pointList_json")
-    c_w = request.form.get("w")
-    c_h = request.form.get("h")
-    img_src = request.form.get("img_base64")
-    img_bytes_base64_str = img_src[len('data:image/jpeg;base64, '):].replace("%0A", "\n")
-    # 'manualDraw:<|||||>pointList_json <|||||> WxH <|||||> img_bytes_base64_str'
-    Send("manualDraw:<|||||>{}<|||||>{}x{}<|||||>{}".format(pointList_json, c_w, c_h, img_bytes_base64_str))
-    [img_bytes_base64_str, inf] = Recv().split("<|||||>")
-    #print("From Img Src Base64 String [Str]: {}".format(img_bytes_base64_str))
-    #print("From Img Src Base64 String [Len]: {}".format(len(img_bytes_base64_str)))
-    return '<img src="data:image/jpeg;base64, {}" />'.format(img_bytes_base64_str)
+    lane = request.form.get("lane")
+    # 'manualDraw:<|||||> pointList_json <|||||> lane'
+    Send("manualDraw:<|||||>{}<|||||>{}".format(pointList_json, lane))
+    img_bytes_base64_str = Recv()
+    return 'data:image/jpeg;base64, {}'.format(img_bytes_base64_str)
 
 @app.route('/post/refreshImg', methods=['POST'])
 def refreshImg():
+    c_w = request.form.get("w")
+    c_h = request.form.get("h")
     img_bytes = getMonitorImg()
     img_bytes_base64_bytes = base64.encodebytes(img_bytes)
     img_bytes_base64_str = bytes.decode(img_bytes_base64_bytes, 'utf-8')
-    #print("From Monitor Base64 String [Str]: {}".format(img_bytes_base64_str.replace("\n", "%0A")))
-    #print("From Monitor Base64 String [Len]: {}".format(len(img_bytes_base64_str.replace("\n", "%0A"))))
+    # 'newDraw:<|||||> WxH <|||||> img_bytes_base64_str'
+    SafeSend("newDraw:<|||||>{}x{}<|||||>{}".format(c_w, c_h, img_bytes_base64_str))
     return 'data:image/jpeg;base64, {}'.format(img_bytes_base64_str)
 
 @app.route('/video_feed')

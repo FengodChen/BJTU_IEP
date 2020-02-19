@@ -47,15 +47,17 @@
                     $("#road_function").attr("value", selectRoad)
                 });
 
-                $("#submit").click(function() {
+                $("#add_lane").click(function() {
                     if (pointList.length <=2) {
                         alert("Point number must larger than 2!");
                     } else {
                         pointList_json = JSON.stringify(pointList);
+                        lane = $("#road_function").attr("value")
                         $.post("/post/manualDraw",
-                        {pointList_json:pointList_json, w:c_w, h:c_h, img_base64: roadImg.src}, function(recv){
+                        {pointList_json:pointList_json, lane:lane}, function(recv){
                             // TODO
-                            $('#testBin').html(recv);
+                            //$('#testBin').html(recv);
+                            roadImg.src = recv;
                             //alert(recv)
                         });
                         mouseFlag = false
@@ -65,12 +67,16 @@
 
                 $("#refresh").click(function() {
                     $.post("/post/refreshImg",
-                    {tmp:"None"}, function(recv){
+                    {w:c_w, h:c_h}, function(recv){
                         roadImg.src = recv;
-                        context.drawImage(roadImg, 0, 0, c_w, c_h);
+                        //context.drawImage(roadImg, 0, 0, c_w, c_h);
                         mouseFlag = false
                         pointList = new Array();
                     });
+                });
+
+                $("#draw").click(function() {
+                    context.drawImage(roadImg, 0, 0, c_w, c_h);
                 });
 
             });
@@ -88,8 +94,9 @@
                 <option value="Ahead"> Ahead </option>
             </select>
             <input type="text" id="road_function" />
-            <button id="submit"> Submit </button>
+            <button id="add_lane"> Add Lane </button>
             <button id="refresh"> Refresh </button>
+            <button id="draw"> Draw </button>
         </div>
         <div id="testBin"></div>
     </body>

@@ -215,16 +215,22 @@ class ServerThread(threading.Thread):
 
         while (True):
             rec = self.cor.receive()
-            if ('manualDraw:' in rec):
+            if ('newDraw:' in rec):
                 # TODO
-                [title, pointList_json, size, img_bytes_base64_str] = rec.split("<|||||>")
+                [title, size, img_bytes_base64_str] = rec.split("<|||||>")
                 (w, h) = size.split("x")
                 w = int(w)
                 h = int(h)
-                pointList = json.loads(pointList_json)
                 mg = HeatMap.ManualGetLane(img_bytes_base64_str, w, h)
-                img_bytes_base64_str = mg.drawMask(pointList)
-                self.cor.send("{}<|||||>{}".format(img_bytes_base64_str, "True"))
+                while (True):
+                    rec = self.cor.receive()
+                    if ("manualDraw:" in rec):
+                        [title, pointList_json, lane] = rec.split(("<|||||>"))
+                        pointList = json.loads(pointList_json)
+                        img_bytes_base64_str = mg.drawMask(pointList)
+                        self.cor.send("{}".format(img_bytes_base64_str))
+                    elif ("yyy" in rec):
+                        pass
 
 if __name__ == "__main__":
     s_path = "/Share/laneline_data/statistic.db"
