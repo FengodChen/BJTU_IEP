@@ -60,6 +60,8 @@ class Vehicle_Generator:
         indexDB = self.getIndexDB(roadName, date)
         if (indexDB == None):
             return False
+        
+        indexDB.initRoadLine()
 
         if (not roadName in self.treeDict):
             self.treeDict[roadName] = {}

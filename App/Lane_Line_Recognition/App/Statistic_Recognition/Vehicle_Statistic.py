@@ -185,14 +185,12 @@ class StatisticThread(threading.Thread):
                 if ("ERROR:" in rec):
                     print("[ERROR]: Road \"{}\" cannot be found".format(roadName))
                 else:
-                    sticDict = self.vehicleDB.read(roadName)
+                    (sticDict, lane_str) = self.vehicleDB.read(roadName)
                     sticArray = []
                     for name in ["car", "bus", "truck"]:
                         sticArray.append(sticDict[name])
-                    # TODO set lane name
-                    laneArray = []
-                    for i in range(len(sticArray[0])):
-                        laneArray.append("Road{}".format(i+1))
+                    # set lane name
+                    laneArray = lane_str.split(",")[:-1]
                     self.gen.insertData(roadName, nowDate, nowTime, sticArray, laneArray)
                     print("Added: {}".format(roadName))
 

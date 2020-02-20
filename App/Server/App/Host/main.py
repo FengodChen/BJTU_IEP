@@ -157,9 +157,9 @@ class WebHost(socketserver.BaseRequestHandler):
         elif (order == 'getMonitorList'):
             return self.getMonitorList()
         elif ('manualDraw:' in order):
-            return self.heatMap(order)
+            return self.olOrder(order)
         elif ('newDraw:' in order):
-            return self.heatMap(order)
+            return self.olOrder(order)
         else:
             return "!"
     
@@ -174,7 +174,7 @@ class WebHost(socketserver.BaseRequestHandler):
                 return om.getAns(key)
             time.sleep(0.1)
     
-    def heatMap(self, order:str):
+    def olOrder(self, order:str):
         key = self.getKey()
         ol.insertOrder(order, key)
         while (True):

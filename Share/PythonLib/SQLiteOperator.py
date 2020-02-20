@@ -54,27 +54,20 @@ class BaseOperator:
 class LaneAreaOperator(BaseOperator):
     def __init__(self, db_path, rw, check_same_thread=True):
         super().__init__(db_path, rw, check_same_thread=check_same_thread)
-        self.__colList = ["RoadName TEXT NOT NULL", "Size TEXT NOT NULL", "Array TEXT NOT NULL"]
+        self.__colList = ["RoadName TEXT NOT NULL", "Size TEXT NOT NULL", "Array TEXT NOT NULL", "Lane TEXT NOT NULL"]
     
     def createTable(self):
         super().createTable("Main", self.__colList)
     
-    def read(self, roadName) -> np.array:
-        # Debug
-        (size_str, array_str) = super().read("Main", "Size, Array", "RoadName IS \"{}\"".format(roadName))[0]
+    def read(self, roadName) -> (np.array, str):
+        (size_str, array_str, lane_str) = super().read("Main", "Size, Array, Lane", "RoadName IS \"{}\"".format(roadName))[0]
         npArray = Numpy_String.str2np(array_str, size_str)
-        return npArray
-        try:
-            (size_str, array_str) = super().read("Main", "Size, Array", "RoadName IS \"{}\"".format(roadName))[0]
-            npArray = Numpy_String.str2np(array_str, size_str)
-            return npArray
-        except:
-            return None
+        return (npArray, lane_str)
     
-    def write(self, roadName, npArray, commit=True):
+    def write(self, roadName, npArray, lane, commit=True):
         (array_str, size_str) = Numpy_String.np2str(npArray)
         self.createTable()
-        super().write("Main", ["\"{}\"".format(roadName), "\"{}\"".format(size_str), "\"{}\"".format(array_str)], commit=commit)
+        super().write("Main", ["\"{}\"".format(roadName), "\"{}\"".format(size_str), "\"{}\"".format(array_str), "\"{}\"".format((lane))], commit=commit)
     
     def getRoadList(self) -> list:
         roadList = super().read("Main", "RoadName")
@@ -89,12 +82,12 @@ class VehicleOperator(BaseOperator):
         self.vehicleList = ["car", "bus", "truck"]
         self.laneArea_opr = laneArea_opr
     
-    def read(self, roadName) -> dict:
+    def read(self, roadName) -> (dict, str):
         '''
         Return {"car": [r1, r2, ..., rn], "bus": [...], "truck": [...]}
         '''
         locationDict = {}
-        laneArray = self.laneArea_opr.read(roadName)
+        (laneArray, lane) = self.laneArea_opr.read(roadName)
         (h, w) = np.shape(laneArray)
         lineNum = np.max(laneArray)
         for vehicleName in self.vehicleList:
@@ -107,4 +100,4 @@ class VehicleOperator(BaseOperator):
                 if (laneArray[y][x] > 0):
                     locationDict[vehicleName][laneArray[y][x] - 1] += 1
         
-        return locationDict
+        return (locationDict, lane)
