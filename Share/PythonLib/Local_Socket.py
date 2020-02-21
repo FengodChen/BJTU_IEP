@@ -2,6 +2,9 @@ import socket
 import threading
 import time
 import Local_Socket_Config
+import Log
+
+logger = Log.Log("/Share/Log/Local_Socket.log")
 
 debug_flag = False
 class SendThread(threading.Thread):
@@ -59,14 +62,14 @@ class Correspond:
         try:
             self.socket_s.listen(10)
             (conn, addr) = self.socket_s.accept()
-            print ("Connect by {}".format(addr))
+            logger.info ("Connect by {}".format(addr))
             #self.send_thread = SendThread(conn)
             #self.send_thread.start()
             self.conn = conn
             self.send_server_check = True
             return True
         except Exception as e:
-            #print(e)
+            logger.error(e)
             return False
 
     def start_receive_server(self, sleeptime:float=1.0, timeout:int=float('+inf')):
@@ -77,7 +80,7 @@ class Correspond:
                 self.recv_server_check = True
                 return True
             except Exception as e:
-                #print(e)
+                logger.error(e)
                 time.sleep(sleeptime)
                 clk += 1
         return False

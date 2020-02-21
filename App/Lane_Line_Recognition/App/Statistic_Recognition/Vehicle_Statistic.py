@@ -21,7 +21,11 @@ import Vehicle_Generator
 
 import SQLiteOperator
 
+import Log
+
 import HeatMap
+
+logger = Log.Log("/Share/Log/Vehicle_Statistic.log")
     
 class SQLOperator:
     def __init__(self, statisticDB_path, vehicleDB_path):
@@ -77,11 +81,11 @@ class GetLaneStatisticThread(threading.Thread):
         self.updatingFlag = False
     
     def run(self):
-        print("{} Waiting for connect".format(self.send_addr))
+        logger.info("{} Waiting for connect".format(self.send_addr))
         self.cor.start_send_server()
-        print("{} Waiting for connect".format(self.recv_addr))
+        logger.info("{} Waiting for connect".format(self.recv_addr))
         self.cor.start_receive_server()
-        print("{} Connected{}".format(self.send_addr, self.recv_addr))
+        logger.info("{} Connected{}".format(self.send_addr, self.recv_addr))
         startTime = time.time()
         endTime = time.time() + self.clock_minute * 60
         while (True):
@@ -98,14 +102,14 @@ class GetLaneStatisticThread(threading.Thread):
             startTime = time.time()
 
             for roadName in self.opr.roadList:
-                print("NeedPredict: {}".format(roadName))
+                logger.info("NeedPredict: {}".format(roadName))
                 self.cor.send("NeedPredict:{}".format(roadName))
                 rec = self.cor.receive()
                 if ("ERROR:" in rec):
-                    print("[ERROR]: Road \"{}\" cannot be found".format(roadName))
+                    logger.error("Road \"{}\" cannot be found".format(roadName))
                 else:
                     self.opr.addData(roadName)
-                    print("Added: {}".format(roadName))
+                    logger.info("Added: {}".format(roadName))
 
             endTime = time.time()
     
@@ -155,11 +159,11 @@ class StatisticThread(threading.Thread):
             self.roadListTmp = None
     
     def run(self):
-        print("{} Waiting for connect".format(self.send_addr))
+        logger.info("{} Waiting for connect".format(self.send_addr))
         self.cor.start_send_server()
-        print("{} Waiting for connect".format(self.recv_addr))
+        logger.info("{} Waiting for connect".format(self.recv_addr))
         self.cor.start_receive_server()
-        print("{} Connected{}".format(self.send_addr, self.recv_addr))
+        logger.info("{} Connected{}".format(self.send_addr, self.recv_addr))
 
         while (self.roadList == None):
             time.sleep(0.1)
@@ -183,7 +187,7 @@ class StatisticThread(threading.Thread):
                 self.cor.send("NeedPredict:{}".format(roadName))
                 rec = self.cor.receive()
                 if ("ERROR:" in rec):
-                    print("[ERROR]: Road \"{}\" cannot be found".format(roadName))
+                    logger.error("Road \"{}\" cannot be found".format(roadName))
                 else:
                     (sticDict, lane_str) = self.vehicleDB.read(roadName)
                     sticArray = []
@@ -192,7 +196,7 @@ class StatisticThread(threading.Thread):
                     # set lane name
                     laneArray = lane_str.split(",")[:-1]
                     self.gen.insertData(roadName, nowDate, nowTime, sticArray, laneArray)
-                    print("Added: {}".format(roadName))
+                    logger.info("Added: {}".format(roadName))
 
             endTime = time.time()
 
@@ -205,11 +209,11 @@ class ServerThread(threading.Thread):
         self.statisticThread = statisticThread
     
     def run(self):
-        print("{} Waiting for connect".format(self.recv_addr))
+        logger.info("{} Waiting for connect".format(self.recv_addr))
         self.cor.start_receive_server()
-        print("{} Waiting for connect".format(self.send_addr))
+        logger.info("{} Waiting for connect".format(self.send_addr))
         self.cor.start_send_server()
-        print("{} Connected{}".format(self.send_addr, self.recv_addr))
+        logger.info("{} Connected{}".format(self.send_addr, self.recv_addr))
 
         while (True):
             rec = self.cor.receive()
@@ -225,6 +229,7 @@ class ServerThread(threading.Thread):
                     if ("manualDraw:" in rec):
                         [title, pointList_json, lane] = rec.split(("<|||||>"))
                         pointList = json.loads(pointList_json)
+                        mg.addLane(lane)
                         img_bytes_base64_str = mg.drawMask(pointList)
                         self.cor.send("{}".format(img_bytes_base64_str))
                     elif ("yyy" in rec):

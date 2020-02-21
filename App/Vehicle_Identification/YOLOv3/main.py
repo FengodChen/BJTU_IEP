@@ -8,8 +8,11 @@ import time
 import ctypes
 import Local_Socket
 import Local_Socket_Config
+import Log
 import cv2 as cv
 import base64
+
+logger = Log.Log("/Share/Log/Vehicle_Identification.log")
 
 class DarknetThread(threading.Thread):
     def __init__(self, lib_path):
@@ -39,11 +42,11 @@ class MonitorThread(threading.Thread):
         self.connected = False
     
     def run(self):
-        print("{} Waiting for connect".format(self.send_addr))
+        logger.info("{} Waiting for connect".format(self.send_addr))
         self.monitor_cor.start_send_server()
-        print("{} Waiting for connect".format(self.recv_addr))
+        logger.info("{} Waiting for connect".format(self.recv_addr))
         self.monitor_cor.start_receive_server()
-        print("{} Connected{}".format(self.send_addr, self.recv_addr))
+        logger.info("{} Connected{}".format(self.send_addr, self.recv_addr))
         self.connected = True
 
 class LaneLineThread(threading.Thread):
@@ -56,11 +59,11 @@ class LaneLineThread(threading.Thread):
         self.monitorThread = monitorThread
     
     def run(self):
-        print("{} Waiting for connect".format(self.recv_addr))
+        logger.info("{} Waiting for connect".format(self.recv_addr))
         self.yolo_cor.start_receive_server()
-        print("{} Waiting for connect".format(self.send_addr))
+        logger.info("{} Waiting for connect".format(self.send_addr))
         self.yolo_cor.start_send_server()
-        print("{} Connected{}".format(self.send_addr, self.recv_addr))
+        logger.info("{} Connected{}".format(self.send_addr, self.recv_addr))
         while (not self.monitorThread.connected):
             time.sleep(0.1)
         while (True):

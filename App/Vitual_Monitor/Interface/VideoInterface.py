@@ -10,8 +10,11 @@ import time
 import threading
 import Local_Socket
 import Local_Socket_Config
+import Log
 import os
 import copy
+
+logger = Log.Log("/Share/Log/Vitual_Monitor.log")
 
 class VideoOperator:
     def __init__(self):
@@ -37,14 +40,14 @@ class VideoOperator:
 
         self.video_base64[road_name] = []
 
-        print("Loading Video")
+        logger.info("Loading Video")
         for tmp in range(self.frame_num[road_name]):
             (ret, frame) = video.read()
             (is_succ, img_jpg) = cv.imencode(".jpg", frame)
             jpg_bin = img_jpg.tobytes()
             jpg_base64 = base64.encodebytes(jpg_bin)
             self.video_base64[road_name].append(jpg_base64)
-        print("Loaded")
+        logger.info("Loaded")
 
         video.release()
         self.loaded[road_name] = True
@@ -87,11 +90,11 @@ class VitualMonitor_Socket_Threading(threading.Thread):
         self.correspond = Local_Socket.Correspond(send_addr, recv_addr)
     
     def run(self):
-        print("[Vitual Monitor Receive]{} Waiting for connect".format(self.recv_addr))
+        logger.info("[Vitual Monitor Receive]{} Waiting for connect".format(self.recv_addr))
         self.correspond.start_receive_server()
-        print("[Vitual Monitor Send]{} Waiting for connect".format(self.send_addr))
+        logger.info("[Vitual Monitor Send]{} Waiting for connect".format(self.send_addr))
         self.correspond.start_send_server()
-        print("[Vitual Monitor]{} Connected{}".format(self.send_addr, self.recv_addr))
+        logger.info("[Vitual Monitor]{} Connected{}".format(self.send_addr, self.recv_addr))
         while (True):
             rec = self.correspond.receive()
             if ("Name:" in rec):
@@ -102,16 +105,14 @@ class VitualMonitor_Socket_Threading(threading.Thread):
                         self.correspond.send("[ERROR]:Not Such A Road")
                         continue
                 while (not self.videoOperator.loaded[road_name]):
-                    print("Waiting for Loaded")
+                    logger.info("Waiting for Loaded")
                     time.sleep(0.2)
                 self.correspond.send("[OK]:Road Connected")
                 rec = self.correspond.receive()
                 if (rec == 'LoopVideo'):
-                    while (True):
-                        if (self.videoOperator.loaded[road_name]):
-                            frame_base64 = self.videoOperator.getFrame_base64(road_name, time.time())
-                            self.correspond.send(frame_base64)
-                        time.sleep(0.033)
+                    if (self.videoOperator.loaded[road_name]):
+                        frame_base64 = self.videoOperator.getFrame_base64(road_name, time.time())
+                        self.correspond.send(frame_base64)
                 elif ("Time:" in rec):
                     time_sec = float(rec[5:])
                     frame_base64 = self.videoOperator.getFrame_base64(road_name, time_sec)

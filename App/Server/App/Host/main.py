@@ -16,6 +16,7 @@ class LoopMonitor_Thread(threading.Thread):
         threading.Thread.__init__(self)
         self.nextFlag = False
         self.strPic_base64 = 'None'
+        self.roadName = 'G107'
     
     def __iter__(self):
         return self
@@ -24,16 +25,19 @@ class LoopMonitor_Thread(threading.Thread):
         self.nextFlag = True
         return self.strPic_base64
     
+    def changeRoad(self, roadName:str):
+        self.roadName = roadName
+    
     def run(self):
         cor = Connection.Connect_Monitor_1()
         # TODO
         while (True):
-            cor.send("Name:G107")
-            res = cor.receive()
-            if ("OK" in res):
-                break
-        cor.send("LoopVideo")
-        while (True):
+            while (True):
+                cor.send("Name:{}".format(self.roadName))
+                res = cor.receive()
+                if ("OK" in res):
+                    break
+            cor.send("LoopVideo")
             while (not self.nextFlag):
                 time.sleep(0.001)
             self.strPic_base64 = cor.receive()
@@ -46,6 +50,9 @@ class LoopMonitor_Thread(threading.Thread):
             return b
         else:
             return ""
+
+lm = LoopMonitor_Thread()
+lm.start()
 
 class OperateMonitor_Thread(threading.Thread):
     def __init__(self):
@@ -132,10 +139,8 @@ class OperateLaneLine_Thread(threading.Thread):
         else:
             return False
 
-lm = LoopMonitor_Thread()
 om = OperateMonitor_Thread()
 ol = OperateLaneLine_Thread()
-lm.start()
 om.start()
 ol.start()
 
@@ -154,6 +159,8 @@ class WebHost(socketserver.BaseRequestHandler):
     def operate(self, order:str) -> str:
         if (order == 'getVideo'):
             return next(lm)
+        elif ('changeMonitor:' in order):
+            return self.changeMonitor(order[len('changeMonitor'):])
         elif (order == 'getMonitorList'):
             return self.getMonitorList()
         elif ('manualDraw:' in order):
@@ -165,6 +172,10 @@ class WebHost(socketserver.BaseRequestHandler):
     
     def getKey(self) -> int:
         return int(time.time()*10000000)
+    
+    def changeMonitor(self, roadName:str):
+        lm.changeRoad(roadName)
+        return '0'
     
     def getMonitorList(self) -> str:
         key = self.getKey()
@@ -263,4 +274,3 @@ class WebHost_Thread(threading.Thread):
 if __name__ == "__main__":
     wt = WebHost_Thread(8097)
     wt.start()
-    print("End of Main")

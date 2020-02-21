@@ -59,7 +59,8 @@ class ManualGetLane:
         (h, w, c) = np.shape(self.img_orgi)
         self.img_flag = np.zeros((h, w), dtype=np.uint8)
 
-        self.lanelist = []
+        self.lanelist = ""
+        self.lanedict = {}
 
         self.dt_show = dt_show
         self.level = 0
@@ -78,6 +79,12 @@ class ManualGetLane:
         img_bytes_base64_str = str(img_bytes_base64_bytes, encoding='utf-8')
 
         return img_bytes_base64_str
+    
+    def addLane(self, laneName:str):
+        if (not laneName in self.lanedict):
+            self.lanedict[laneName] = 0
+        self.lanedict[laneName] += 1
+        self.lanelist = "{}{}-{},".format(self.lanelist, laneName, self.lanedict[laneName])
 
     def save(self, db_path, roadName):
         db = SQLiteOperator.LaneAreaOperator(db_path, True)

@@ -73,6 +73,12 @@ def monitor():
     monitorStr = Recv()
     return "<p>{}</p>".format(monitorStr)
 
+@app.route('/change/<roadName>')
+def change(roadName):
+    Send('changeMonitor:'.format(roadName))
+    monitorStr = Recv()
+    return monitorStr
+
 @app.route('/searchRoad')
 def searchRoad():
     return render_template('searchRoad.html')

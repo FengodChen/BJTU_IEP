@@ -3,23 +3,26 @@ sys.path.insert(0, '/Share/PythonLib')
 
 import Local_Socket
 import Local_Socket_Config
+import Log
 import time
 import base64
+
+logger = Log.Log("/Share/Log/Server.log")
 
 def Connect(send_addr, recv_addr, send_server_first):
     cor = Local_Socket.Correspond(send_addr, recv_addr)
     if (send_server_first):
-        print("[Server Host Send]{} Waiting for connect".format(send_addr))
+        logger.info("[Server Host Send]{} Waiting for connect".format(send_addr))
         cor.start_send_server()
-        print("[Server Host Receive]{} Waiting for connect".format(recv_addr))
+        logger.info("[Server Host Receive]{} Waiting for connect".format(recv_addr))
         cor.start_receive_server()
-        print("[Server Host]{} Connected{}".format(send_addr, recv_addr))
+        logger.info("[Server Host]{} Connected{}".format(send_addr, recv_addr))
     else:
-        print("[Server Host Receive]{} Waiting for connect".format(recv_addr))
+        logger.info("[Server Host Receive]{} Waiting for connect".format(recv_addr))
         cor.start_receive_server()
-        print("[Server Host Send]{} Waiting for connect".format(send_addr))
+        logger.info("[Server Host Send]{} Waiting for connect".format(send_addr))
         cor.start_send_server()
-        print("[Server Host]{} Connected{}".format(send_addr, recv_addr))
+        logger.info("[Server Host]{} Connected{}".format(send_addr, recv_addr))
     return cor
 
 def Connect_Monitor_1():
