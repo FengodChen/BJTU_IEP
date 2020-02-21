@@ -1,6 +1,6 @@
 import logging
 
-LOGING_LEVEL = logging.DEBUG
+LOGING_LEVEL = logging.INFO
 
 class Log:
     def __init__(self, file_path:str):
@@ -8,7 +8,7 @@ class Log:
         self.logger.setLevel(LOGING_LEVEL)
         fh = logging.FileHandler(file_path, mode='a')
         fh.setLevel(LOGING_LEVEL)
-        formatter = logging.Formatter('%(asctime)s - %(filename)s[line:%(lineno)d] - %(levelname)s: %(message)s')
+        formatter = logging.Formatter('%(asctime)s - %(levelname)s: %(message)s')
         fh.setFormatter(formatter)
         self.logger.addHandler(fh)
     

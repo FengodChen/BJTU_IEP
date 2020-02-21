@@ -73,9 +73,9 @@ def monitor():
     monitorStr = Recv()
     return "<p>{}</p>".format(monitorStr)
 
-@app.route('/change/<roadName>')
-def change(roadName):
-    Send('changeMonitor:'.format(roadName))
+@app.route('/change')
+def change():
+    Send('changeMonitor:G108')
     monitorStr = Recv()
     return monitorStr
 

@@ -11,6 +11,10 @@ import socketserver
 import hashlib
 import Connection
 
+import Log
+
+logger = Log.Log("/Share/Log/Host.log")
+
 class LoopMonitor_Thread(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
@@ -33,14 +37,24 @@ class LoopMonitor_Thread(threading.Thread):
         # TODO
         while (True):
             while (True):
+                logger.debug("Start Sending: {}".format(self.roadName))
                 cor.send("Name:{}".format(self.roadName))
+                logger.debug("End Sending: {}".format(self.roadName))
+                logger.debug("Start Recv")
                 res = cor.receive()
+                logger.debug("End Recv")
+                logger.debug("Waiting OK")
                 if ("OK" in res):
+                    logger.debug("Res OK")
                     break
+            logger.debug("Start Sending LoopVideo")
             cor.send("LoopVideo")
+            logger.debug("End Sending LoopVideo")
             while (not self.nextFlag):
                 time.sleep(0.001)
+            logger.debug("Start Recv LoopVideo")
             self.strPic_base64 = cor.receive()
+            logger.debug("End Recv LoopVideo")
             self.nextFlag = False
     
     def decode(self, picString):
@@ -158,9 +172,13 @@ class WebHost(socketserver.BaseRequestHandler):
 
     def operate(self, order:str) -> str:
         if (order == 'getVideo'):
-            return next(lm)
+            n = next(lm)
+            #logger.debug("Next Loop Monitor: {}".format(n))
+            return n
         elif ('changeMonitor:' in order):
-            return self.changeMonitor(order[len('changeMonitor'):])
+            roadName = order[len('changeMonitor:'):]
+            logger.debug("RoadName: {}".format(roadName))
+            return self.changeMonitor(roadName)
         elif (order == 'getMonitorList'):
             return self.getMonitorList()
         elif ('manualDraw:' in order):
