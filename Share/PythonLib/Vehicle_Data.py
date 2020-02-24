@@ -51,7 +51,7 @@ class IndexDB:
 
         roadLine = ""
         for roadFunc in roadList:
-            roadLine = "{}, {} INT NOT NULL".format(roadLine, roadFunc)
+            roadLine = "{}, \"{}\" INT NOT NULL".format(roadLine, roadFunc)
         self.db.execute("CREATE TABLE Car(TIME TEXT NOT NULL {});".format(roadLine))
         self.db.execute("CREATE TABLE Bus(TIME TEXT NOT NULL {});".format(roadLine))
         self.db.execute("CREATE TABLE Truck(TIME TEXT NOT NULL {});".format(roadLine))

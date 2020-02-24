@@ -42,23 +42,15 @@
                     }
                 });
 
-                $('#road_selection').change(function() {
-                    var selectRoad = $('#road_selection').find("option:selected").text()
-                    $("#road_function").attr("value", selectRoad)
-                });
-
                 $("#add_lane").click(function() {
                     if (pointList.length <=2) {
                         alert("Point number must larger than 2!");
                     } else {
                         pointList_json = JSON.stringify(pointList);
-                        lane = $("#road_function").attr("value")
+                        lane = $("#road_function").val()
                         $.post("/post/manualDraw",
                         {pointList_json:pointList_json, lane:lane}, function(recv){
-                            // TODO
-                            //$('#testBin').html(recv);
                             roadImg.src = recv;
-                            //alert(recv)
                         });
                         mouseFlag = false
                         pointList = new Array();
@@ -66,8 +58,9 @@
                 });
 
                 $("#refresh").click(function() {
+                    road = $("#roadkeys").val();
                     $.post("/post/refreshImg",
-                    {w:c_w, h:c_h}, function(recv){
+                    {w:c_w, h:c_h, road:road}, function(recv){
                         roadImg.src = recv;
                         //context.drawImage(roadImg, 0, 0, c_w, c_h);
                         mouseFlag = false
@@ -75,8 +68,24 @@
                     });
                 });
 
+                $("#save").click(function() {
+                    $.post("/post/saveDraw",
+                    {m:0}, function(recv){
+                        mouseFlag = false
+                        pointList = new Array();
+                    });
+                });
+
                 $("#draw").click(function() {
                     context.drawImage(roadImg, 0, 0, c_w, c_h);
+                });
+
+                $("#roadkeys").keyup(function(){
+                    roadkeys = $("#roadkeys").val();
+                    $.post("/post/getMonitorList", 
+                    {roadkey:roadkeys}, function(recv){
+                        $("#roadans").html(recv);
+                    });
                 });
 
             });
@@ -87,18 +96,23 @@
             <canvas id="drawCanvas" width="800" height="640", style="border:1px solid #c3c3c3;"></canvas>
         </div>
         <div>
-            <select id="road_selection">
-                <option value="--"> -- </option>
-                <option value="Turn Left"> Turn Left </option>
-                <option value="Turn Right"> Turn Right </option>
-                <option value="Ahead"> Ahead </option>
-            </select>
-            <input type="text" id="road_function" />
+            <h3>[路段名字]</h3>
+            <input type="text" list="roadans" id="roadkeys">
+                <datalist id="roadans"></datalist>
+            </input>
+            <h3>[操作台]</h3>
+            <input type="text" list="road_selection" id="road_function" >
+                <datalist id="road_selection">
+                    <option value="Turn Left"> Turn Left </option>
+                    <option value="Turn Right"> Turn Right </option>
+                    <option value="Ahead"> Ahead </option>
+                </datalist>
+            </input>
             <button id="add_lane"> Add Lane </button>
             <button id="refresh"> Refresh </button>
             <button id="draw"> Draw </button>
+            <button id="save"> Save </button>
         </div>
-        <div id="testBin"></div>
     </body>
 
 

@@ -201,11 +201,12 @@ class StatisticThread(threading.Thread):
             endTime = time.time()
 
 class ServerThread(threading.Thread):
-    def __init__(self, statisticThread):
+    def __init__(self, laneDB_path, statisticThread):
         threading.Thread.__init__(self)
         self.send_addr = Local_Socket_Config.server_laneline_addr2
         self.recv_addr = Local_Socket_Config.server_laneline_addr1
         self.cor = Local_Socket.Correspond(self.send_addr, self.recv_addr)
+        self.laneDB_path = laneDB_path
         self.statisticThread = statisticThread
     
     def run(self):
@@ -219,11 +220,11 @@ class ServerThread(threading.Thread):
             rec = self.cor.receive()
             if ('newDraw:' in rec):
                 # TODO
-                [title, size, img_bytes_base64_str] = rec.split("<|||||>")
+                [title, size, img_bytes_base64_str, roadName] = rec.split("<|||||>")
                 (w, h) = size.split("x")
                 w = int(w)
                 h = int(h)
-                mg = HeatMap.ManualGetLane(img_bytes_base64_str, w, h)
+                mg = HeatMap.ManualGetLane(roadName, img_bytes_base64_str, w, h)
                 while (True):
                     rec = self.cor.receive()
                     if ("manualDraw:" in rec):
@@ -232,8 +233,14 @@ class ServerThread(threading.Thread):
                         mg.addLane(lane)
                         img_bytes_base64_str = mg.drawMask(pointList)
                         self.cor.send("{}".format(img_bytes_base64_str))
-                    elif ("yyy" in rec):
-                        pass
+                    elif ("saveLane" == rec):
+                        mg.save(self.laneDB_path)
+                    elif ('newDraw:' in rec):
+                        [title, size, img_bytes_base64_str, roadName] = rec.split("<|||||>")
+                        (w, h) = size.split("x")
+                        w = int(w)
+                        h = int(h)
+                        mg = HeatMap.ManualGetLane(roadName, img_bytes_base64_str, w, h)
 
 if __name__ == "__main__":
     s_path = "/Share/laneline_data/statistic.db"
@@ -243,7 +250,7 @@ if __name__ == "__main__":
     clock_minute = 0.1
     #sticThread = StatisticThread(s_path, v_path, clock_minute)
     sticThread = StatisticThread(l_path, v_path, clock_minute)
-    serverThread = ServerThread(sticThread)
+    serverThread = ServerThread(l_path, sticThread)
     sticThread.start()
     serverThread.start()
     #sticThread.addRoad(roadList)

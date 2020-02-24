@@ -37,24 +37,14 @@ class LoopMonitor_Thread(threading.Thread):
         # TODO
         while (True):
             while (True):
-                logger.debug("Start Sending: {}".format(self.roadName))
                 cor.send("Name:{}".format(self.roadName))
-                logger.debug("End Sending: {}".format(self.roadName))
-                logger.debug("Start Recv")
                 res = cor.receive()
-                logger.debug("End Recv")
-                logger.debug("Waiting OK")
                 if ("OK" in res):
-                    logger.debug("Res OK")
                     break
-            logger.debug("Start Sending LoopVideo")
             cor.send("LoopVideo")
-            logger.debug("End Sending LoopVideo")
             while (not self.nextFlag):
                 time.sleep(0.001)
-            logger.debug("Start Recv LoopVideo")
             self.strPic_base64 = cor.receive()
-            logger.debug("End Recv LoopVideo")
             self.nextFlag = False
     
     def decode(self, picString):
@@ -85,6 +75,19 @@ class OperateMonitor_Thread(threading.Thread):
                 cor.send('Road List')
                 roadList_str = cor.receive()
                 self.insertAns(roadList_str, key)
+            elif ('peekMonitor:' in order):
+                roadName = order[len('peekMonitor:'):]
+                while (True):
+                    cor.send("Name:{}".format(roadName))
+                    logger.debug("peekMonitor:{}".format(roadName))
+                    res = cor.receive()
+                    logger.debug("Recv:{}".format(res))
+                    if ("OK" in res):
+                        break
+                cor.send("Time:{}".format(time.time()))
+                strPic_base64 = cor.receive()
+                logger.debug("Recv Img:{}".format(strPic_base64))
+                self.insertAns(strPic_base64, key)
     
     def insertOrder(self, order:str, key:int):
         self.orderQueue.append((order, key))
@@ -127,6 +130,9 @@ class OperateLaneLine_Thread(threading.Thread):
                 draw_img = cor.receive()
                 self.insertAns(draw_img, key)
             elif ('newDraw:' in order):
+                cor.send(order)
+                self.insertAns('0', key)
+            elif ('saveLane' == order):
                 cor.send(order)
                 self.insertAns('0', key)
 
@@ -179,12 +185,10 @@ class WebHost(socketserver.BaseRequestHandler):
             roadName = order[len('changeMonitor:'):]
             logger.debug("RoadName: {}".format(roadName))
             return self.changeMonitor(roadName)
-        elif (order == 'getMonitorList'):
-            return self.getMonitorList()
-        elif ('manualDraw:' in order):
-            return self.olOrder(order)
-        elif ('newDraw:' in order):
-            return self.olOrder(order)
+        elif ("om:" in order):
+            return self.omOrder(order[3:])
+        elif ('ol:' in order):
+            return self.olOrder(order[3:])
         else:
             return "!"
     
@@ -195,9 +199,9 @@ class WebHost(socketserver.BaseRequestHandler):
         lm.changeRoad(roadName)
         return '0'
     
-    def getMonitorList(self) -> str:
+    def omOrder(self, order:str) -> str:
         key = self.getKey()
-        om.insertOrder('getMonitorList', key)
+        om.insertOrder(order, key)
         while (True):
             if (om.finished(key)):
                 return om.getAns(key)

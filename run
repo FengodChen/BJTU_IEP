@@ -48,14 +48,12 @@ function restart() {
 }
 
 function install() {
+        docker network create -d bridge ${DOCKER_BRIDGE}
+        docker build -t ${SEED_DOCKER_NAME}:${SEED_DOCKER_VERSION} ${SMR_PATH}/Docker/ --rm
     if [ "$1" = "-s" ]; then
         install_soft
     elif [ "$1" = "-v" ]; then
         install_vitual_monitor
-    else
-        docker network create -d bridge ${DOCKER_BRIDGE}
-        docker build -t ${SEED_DOCKER_NAME}:${SEED_DOCKER_VERSION} ${SMR_PATH}/Docker/ --rm
-        install -s
     fi
 }
 

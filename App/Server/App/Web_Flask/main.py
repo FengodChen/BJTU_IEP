@@ -56,6 +56,17 @@ def getMonitorImg() -> bytes:
         time.sleep(0.1)
     return byte_pic
 
+def peekMonitorImg(roadname:str) -> bytes:
+    byte_pic = b'0'
+    while (True):
+        Send("om:peekMonitor:{}".format(roadname))
+        strPic_base64 = Recv()
+        byte_pic = decodeBase64Img(strPic_base64)
+        if (not byte_pic == b'0'):
+            break
+        time.sleep(0.1)
+    return byte_pic
+
 def frameGen():
     while (True):
         time.sleep(0.033)
@@ -67,15 +78,10 @@ def frameGen():
 def mainWeb():
     return "<h1>Hello Main</h1>"
 
-@app.route('/monitor')
-def monitor():
-    Send('getMonitorList')
-    monitorStr = Recv()
-    return "<p>{}</p>".format(monitorStr)
-
+# Debug
 @app.route('/change')
 def change():
-    Send('changeMonitor:G108')
+    Send('changeMonitor:TestRoad1')
     monitorStr = Recv()
     return monitorStr
 
@@ -90,10 +96,6 @@ def videoPage():
 @app.route('/draw_pic')
 def draw_pic():
     return render_template('draw.html')
-
-@app.route('/hello/<name>')
-def hello_name(name):
-    return "Hello, {}!".format(name)
 
 @app.route('/post/getTree', methods=['POST'])
 def getTree():
@@ -121,20 +123,40 @@ def manualDraw():
     pointList_json = request.form.get("pointList_json")
     lane = request.form.get("lane")
     # 'manualDraw:<|||||> pointList_json <|||||> lane'
-    Send("manualDraw:<|||||>{}<|||||>{}".format(pointList_json, lane))
+    Send("ol:manualDraw:<|||||>{}<|||||>{}".format(pointList_json, lane))
     img_bytes_base64_str = Recv()
     return 'data:image/jpeg;base64, {}'.format(img_bytes_base64_str)
+
+@app.route('/post/saveDraw', methods=['POST'])
+def saveDraw():
+    SafeSend("ol:saveLane")
+    return ('0')
 
 @app.route('/post/refreshImg', methods=['POST'])
 def refreshImg():
     c_w = request.form.get("w")
     c_h = request.form.get("h")
-    img_bytes = getMonitorImg()
+    road = request.form.get("road")
+    # Debug
+    #img_bytes = getMonitorImg()
+    img_bytes = peekMonitorImg(road)
     img_bytes_base64_bytes = base64.encodebytes(img_bytes)
     img_bytes_base64_str = bytes.decode(img_bytes_base64_bytes, 'utf-8')
-    # 'newDraw:<|||||> WxH <|||||> img_bytes_base64_str'
-    SafeSend("newDraw:<|||||>{}x{}<|||||>{}".format(c_w, c_h, img_bytes_base64_str))
+    # 'newDraw:<|||||> WxH <|||||> img_bytes_base64_str <|||||> roadName'
+    SafeSend("ol:newDraw:<|||||>{}x{}<|||||>{}<|||||>{}".format(c_w, c_h, img_bytes_base64_str, road))
     return 'data:image/jpeg;base64, {}'.format(img_bytes_base64_str)
+
+@app.route('/post/getMonitorList', methods=['POST'])
+def getMonitorList():
+    key = request.form.get("roadkey")
+    Send('om:getMonitorList')
+    monitorStr = Recv()
+    monitorList = monitorStr.split(",")
+    returnStr = "<option value=\"--\">--</option>"
+    for monitor_name in monitorList:
+        if (key in monitor_name):
+            returnStr = "{}<option value=\"{}\">{}</option>".format(returnStr, monitor_name, monitor_name)
+    return returnStr
 
 @app.route('/video_feed')
 def video_feed():

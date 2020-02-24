@@ -1,5 +1,6 @@
 FROM ubuntu:18.04
 MAINTAINER LiaoChen <17211401@bjtu.edu.cn>
+ENV LANG C.UTF-8
 
 # Change apt source
 RUN sed -i s@/archive.ubuntu.com/@/mirrors.aliyun.com/@g /etc/apt/sources.list

@@ -44,9 +44,10 @@ class HeatMap:
         (ret, self.img) = cv.threshold(self.img, min_t, max_t, cv.THRESH_BINARY)
 
 class ManualGetLane:
-    def __init__(self, img_bytes_base64_str:str, img_w:int, img_h:int, dt_show = 15):
+    def __init__(self, roadName, img_bytes_base64_str:str, img_w:int, img_h:int, dt_show = 15):
         self.img_w = img_w
         self.img_h = img_h
+        self.roadName = roadName
 
         img_bytes_base64_bytes = bytes(img_bytes_base64_str, encoding='utf-8')
         img_bytes = base64.decodebytes(img_bytes_base64_bytes)
@@ -81,14 +82,15 @@ class ManualGetLane:
         return img_bytes_base64_str
     
     def addLane(self, laneName:str):
+        self.level += 1
         if (not laneName in self.lanedict):
             self.lanedict[laneName] = 0
         self.lanedict[laneName] += 1
-        self.lanelist = "{}{}-{},".format(self.lanelist, laneName, self.lanedict[laneName])
+        self.lanelist = "{}{} {},".format(self.lanelist, laneName, self.lanedict[laneName])
 
-    def save(self, db_path, roadName):
+    def save(self, db_path):
         db = SQLiteOperator.LaneAreaOperator(db_path, True)
-        db.write(roadName, self.img_flag)
+        db.write(self.roadName, self.img_flag, self.lanelist)
 
 def getDefaultSQLPath():
     s = "/home/fengodchen/WorkSpace/BJTU_IEP/Share/laneline_data/laneArea.db"

@@ -7,6 +7,9 @@ class BaseOperator:
         self.db = sqlite3.connect(db_path, check_same_thread = check_same_thread)
         self.__rw = rw
     
+    def execute(self, order:str):
+        self.db.execute(order)
+    
     def args2str(self, args):
         arg_str = ""
         for arg in args:
@@ -67,6 +70,7 @@ class LaneAreaOperator(BaseOperator):
     def write(self, roadName, npArray, lane, commit=True):
         (array_str, size_str) = Numpy_String.np2str(npArray)
         self.createTable()
+        super().execute("DELETE FROM Main WHERE roadName is \"{}\";".format(roadName))
         super().write("Main", ["\"{}\"".format(roadName), "\"{}\"".format(size_str), "\"{}\"".format(array_str), "\"{}\"".format((lane))], commit=commit)
     
     def getRoadList(self) -> list:
