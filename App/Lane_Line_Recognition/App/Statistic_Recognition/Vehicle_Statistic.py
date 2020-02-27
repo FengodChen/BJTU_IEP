@@ -249,7 +249,7 @@ if __name__ == "__main__":
     # TODO
     clock_minute = 0.1
     #sticThread = StatisticThread(s_path, v_path, clock_minute)
-    sticThread = StatisticThread(l_path, v_path, clock_minute)
+    sticThread = StatisticThread(l_path, v_path, 5)
     serverThread = ServerThread(l_path, sticThread)
     sticThread.start()
     serverThread.start()

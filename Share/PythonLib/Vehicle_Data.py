@@ -2,6 +2,8 @@ import sqlite3
 import time
 import numpy as np
 
+import Vehicle_Generator
+
 class IndexDB:
     def __init__(self, db_path):
         self.db_path = db_path
@@ -184,7 +186,7 @@ class IndexDB:
         for vehicleName in self.vehicleClass:
             roadPtr = 0
             for roadName in self.roadLine:
-                cursors = self.db.execute("SELECT sum({}) FROM {} WHERE TIME BETWEEN \"{}\" AND \"{}\";".format(roadName, vehicleName, startTime, endTime))
+                cursors = self.db.execute("SELECT sum(\"{}\") FROM {} WHERE TIME BETWEEN \"{}\" AND \"{}\";".format(roadName, vehicleName, startTime, endTime))
                 for cursor in cursors:
                     dataArray[vehiclePtr][roadPtr] += cursor[0]
                 roadPtr += 1
@@ -192,3 +194,28 @@ class IndexDB:
 
         return dataArray
     
+    def getData_Unique(self):
+        '''
+        IndexDB.getData(str, str) -> array
+
+        Return dataDict[Time][Vehicle_Type][Road_Function], type: int
+        [Vehicle_Type] = ["Car", "Bus", "Truck"]
+        '''
+        self.initRoadLine()
+
+        dataDict = {}
+
+        vehiclePtr = 0
+        for vehicleName in self.vehicleClass:
+            roadPtr = 0
+            for roadName in self.roadLine:
+                cursors = self.db.execute("SELECT TIME,\"{}\" FROM {};".format(roadName, vehicleName))
+                if (not cursors == None):
+                    for (t, data) in cursors:
+                        if (not t in dataDict):
+                            dataDict[t] = {}
+                        if (not vehicleName in dataDict[t]):
+                            dataDict[t][vehicleName] = {}
+                        dataDict[t][vehicleName][roadName] = data
+
+        return dataDict

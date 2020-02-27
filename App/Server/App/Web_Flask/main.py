@@ -97,6 +97,10 @@ def videoPage():
 def draw_pic():
     return render_template('draw.html')
 
+@app.route('/charts')
+def charts():
+    return render_template('charts.html')
+
 @app.route('/post/getTree', methods=['POST'])
 def getTree():
     roadkey = request.form.get("roadkey")
@@ -157,6 +161,20 @@ def getMonitorList():
         if (key in monitor_name):
             returnStr = "{}<option value=\"{}\">{}</option>".format(returnStr, monitor_name, monitor_name)
     return returnStr
+
+@app.route('/post/getRoadData', methods=['POST'])
+def getRoadData():
+    info_json = {}
+
+    info_json['startDate'] = request.form.get("start_date")
+    info_json['endDate'] = request.form.get("end_date")
+    info_json['roadName'] = request.form.get("road_name")
+
+    info_json_str = json.dumps(info_json)
+
+    Send('od:getData:{}'.format(info_json_str))
+    data_json_str = Recv()
+    return data_json_str
 
 @app.route('/video_feed')
 def video_feed():

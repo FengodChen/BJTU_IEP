@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title> Draw Picture </title>
+        <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=10.0,minimum-scale=0.1,user-scalable=yes">
+        <script src="{{ url_for("static",filename='js/echarts.js')}}"></script>
+        <script src="{{ url_for("static",filename='js/jquery-3.4.1.js')}}"></script>
+    </head>
+    <body>
+        <div>
+            <div id="testCharts" style="width: 600px;height:400px;"></div>
+            <h3 id="hello">[Hello]</h3>
+        </div>
+        <div>
+            道路名称<input id="road_name" type="text" />
+            开始时间<input id="start_date" type="date" />
+            结束时间<input id="end_date" type="date" />
+            <button id="get_road_data">获取列表</button>
+
+        </div>
+
+        <script>
+
+        // 指定图表的配置项和数据
+            var option = {
+                title: {
+                    text: 'ECharts 入门示例'
+                },
+                tooltip: {},
+                legend: {
+                    data:['销量']
+                },
+                xAxis: {
+                    data: ["衬衫","羊毛衫","雪纺衫","裤子","高跟鞋","袜子"]
+                },
+                yAxis: {},
+                series: [{
+                    name: '销量',
+                    type: 'bar',
+                    data: [5, 20, 36, 10, 10, 20]
+                }]
+            };
+        // 使用刚指定的配置项和数据显示图表。
+            $(document).ready(function(){
+                var myChart = echarts.init($('#testCharts').get(0));
+                $("#get_road_data").click(function() {
+                    start_date = $("#start_date").val();
+                    end_date = $("#end_date").val();
+                    road_name = $("#road_name").val();
+                    $.post("/post/getRoadData",
+                    {start_date:start_date, end_date:end_date, road_name:road_name}, function(recv){
+                        alert(recv);
+                    });
+                });
+
+                $('#hello').click(function(){
+                    myChart.setOption(option);
+                });
+                //myChart.setOption(option);
+            });
+        </script>
+
+    </body>
+
+
+</html>

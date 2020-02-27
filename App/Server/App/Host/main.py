@@ -9,7 +9,12 @@ import base64
 import time
 import socketserver
 import hashlib
+import json
+
 import Connection
+
+import Vehicle_Tree
+import Vehicle_Generator
 
 import Log
 
@@ -159,10 +164,61 @@ class OperateLaneLine_Thread(threading.Thread):
         else:
             return False
 
+class OperateData_Thread(threading.Thread):
+    def __init__(self):
+        threading.Thread.__init__(self)
+
+        self.orderQueue = []
+        self.ansDict = {}
+
+        self.treeDB = Vehicle_Tree.TreeDB("/Share/Main_Data", "tree.db")
+        self.gen = Vehicle_Generator.Vehicle_Generator(self.treeDB)
+
+    def run(self):
+        while (True):
+            if (len(self.orderQueue) == 0):
+                time.sleep(1)
+                continue
+            (order, key) = self.takeOrder()
+            if ('getData:' in order):
+                info_json_str = order[len('getData:'):]
+                info_json = json.loads(info_json_str)
+                roadName = info_json["roadName"]
+                startDate = info_json["startDate"]
+                endDate = info_json["endDate"]
+                dataDict = self.gen.getData_DateRange_Unique(roadName, startDate, endDate)
+                dataDict_json = json.dumps(dataDict)
+                self.insertAns(dataDict_json, key)
+
+    def insertOrder(self, order:str, key:int):
+        self.orderQueue.append((order, key))
+    
+    def takeOrder(self) -> (str, int):
+        order_key = self.orderQueue.pop(0)
+        return order_key
+    
+    def insertAns(self, ans:str, key:int):
+        self.ansDict[key] = ans
+    
+    def getAns(self, key:int) -> str:
+        if (self.finished(key)):
+            ans = self.ansDict.pop(key)
+            return ans
+        else:
+            return ""
+    
+    def finished(self, key:int) -> bool:
+        if (key in self.ansDict):
+            return True
+        else:
+            return False
+
 om = OperateMonitor_Thread()
 ol = OperateLaneLine_Thread()
+od = OperateData_Thread()
 om.start()
 ol.start()
+od.start()
 
 class WebHost(socketserver.BaseRequestHandler):
     def handle(self):
@@ -189,6 +245,8 @@ class WebHost(socketserver.BaseRequestHandler):
             return self.omOrder(order[3:])
         elif ('ol:' in order):
             return self.olOrder(order[3:])
+        elif ('od:' in order):
+            return self.odOrder(order[3:])
         else:
             return "!"
     
@@ -213,6 +271,14 @@ class WebHost(socketserver.BaseRequestHandler):
         while (True):
             if (ol.finished(key)):
                 return ol.getAns(key)
+            time.sleep(0.1)
+
+    def odOrder(self, order:str):
+        key = self.getKey()
+        od.insertOrder(order, key)
+        while (True):
+            if (od.finished(key)):
+                return od.getAns(key)
             time.sleep(0.1)
     
     def send(self, data:str) -> (bool, str):

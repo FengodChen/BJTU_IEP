@@ -104,6 +104,23 @@ class Vehicle_Generator:
 
         return sum_dict
     
+    def getData_Unique(self, roadName, date):
+        """
+        Vehicle_Generator.getData_TimeRange(str, str, str, str) -> dict
+
+        Time Format:"HH:MM:SS"
+
+        Return sum_dict[Time][Vehicle_Type][Road_Function], type: int
+        """
+        if (not self.initData(roadName, date)):
+            return None
+        indexDB = self.treeDict[roadName][date]
+        indexDB.initRoadLine()
+
+        sum_dict = indexDB.getData_Unique()
+
+        return sum_dict
+    
     def getData_DateRange(self, roadName, startDate, endDate, startTime, endTime):
         """
         Vehicle_Generator.getData_DateRange(str, str, str, str, str) -> dict
@@ -119,6 +136,27 @@ class Vehicle_Generator:
         for date in dateList:
             if (self.initData(roadName, date)):
                 sum_dict[date] = self.getData_TimeRange(roadName, date, startTime, endTime)
+        return sum_dict
+
+    def getData_DateRange_Unique(self, roadName, startDate, endDate):
+        """
+        Vehicle_Generator.getData_DateRange(str, str, str, str, str) -> dict
+
+        Date Format:"YYYY-MM-DD"
+
+        Time Format:"HH:MM:SS"
+
+        Return sum_dict[Date][Time][Vehicle_Type][Road_Function], type: int
+        """
+        sum_dict = {}
+        dateList = getDateRange(startDate, endDate)
+        for date in dateList:
+            if (self.initData(roadName, date)):
+                print("[Operating] Date: {}".format(date))
+                try:
+                    sum_dict[date] = self.getData_Unique(roadName, date)
+                except:
+                    pass
         return sum_dict
     
     def insertData(self, roadName, date, time, vehicleArray, roadArray = None):
