@@ -8,38 +8,29 @@
     </head>
     <body>
         <div>
-            <div id="testCharts" style="width: 600px;height:400px;"></div>
+            <div id="testCharts" style="width: 1600px;height:600px;"></div>
             <h3 id="hello">[Hello]</h3>
         </div>
         <div>
-            道路名称<input id="road_name" type="text" />
+            道路名称
+            <input id="road_name" type="text" list="road_tree">
+                <datalist id="road_tree"></datalist>
+            </input>
             开始时间<input id="start_date" type="date" />
             结束时间<input id="end_date" type="date" />
             <button id="get_road_data">获取列表</button>
+        </div>
 
+        <div>
+            <button id="data_by_date">按日期</button>
+            日期<input id="data_select_date" type="date" />
+            <button id="data_by_time">按时间</button>
         </div>
 
         <script>
 
-        // 指定图表的配置项和数据
-            var option = {
-                title: {
-                    text: 'ECharts 入门示例'
-                },
-                tooltip: {},
-                legend: {
-                    data:['销量']
-                },
-                xAxis: {
-                    data: ["衬衫","羊毛衫","雪纺衫","裤子","高跟鞋","袜子"]
-                },
-                yAxis: {},
-                series: [{
-                    name: '销量',
-                    type: 'bar',
-                    data: [5, 20, 36, 10, 10, 20]
-                }]
-            };
+            var data_dict;
+            //var charts_option = {};
         // 使用刚指定的配置项和数据显示图表。
             $(document).ready(function(){
                 var myChart = echarts.init($('#testCharts').get(0));
@@ -49,13 +40,70 @@
                     road_name = $("#road_name").val();
                     $.post("/post/getRoadData",
                     {start_date:start_date, end_date:end_date, road_name:road_name}, function(recv){
-                        alert(recv);
+                        //alert(recv);
+                        data_dict = JSON.parse(recv);
+                        alert("OK!");
                     });
                 });
 
+                $("#road_name").keyup(function(){
+                    roadkeys = $("#road_name").val();
+                    $.post("/post/getTree", 
+                    {roadkey:roadkeys}, function(recv){
+                        $("#road_tree").html(recv);
+                    });
+                });
+
+                $('#data_by_time').click(function(){
+                    select_date = $("#data_select_date").val();
+                    if (!(select_date in data_dict)) {
+                        alert("Not Such date");
+                    } else {
+
+                        time_list = Object.keys(data_dict[select_date]);
+                        vehicle_list = Object.keys(data_dict[select_date][time_list[0]]);
+                        road_list = Object.keys(data_dict[select_date][time_list[0]][vehicle_list[0]]);
+    
+                        charts_option = {};
+                        //charts_option['title'] = {text: select_date};
+
+                        charts_option['tooltip'] = {trigger: 'axis'};
+    
+                        charts_option['legend'] = {data:[]};
+                        charts_option['dataZoom'] = [{type: 'slider', show: true}, {type: 'inside'}];
+    
+                        charts_option['xAxis'] = {type:'category', data:time_list};
+                        charts_option['yAxis'] = {type:'value'};
+    
+                        charts_option['series'] = []
+                        for (var road_name of road_list) {
+                            var stack_name = null;
+                            for (var vehicle_name of vehicle_list) {
+                                d_name = road_name + ': ' + vehicle_name;
+                                charts_option['legend']['data'].push(d_name)
+                                charts_option['series'].push({name:d_name, type:'bar', data:[], stack: road_name});
+                            }
+                        }
+    
+                        for (var time of time_list) {
+                            var ptr = 0;
+                            for (var road of road_list) {
+                                for (var vehicle of vehicle_list) {
+                                    var d = data_dict[select_date][time][vehicle][road];
+                                    charts_option['series'][ptr]['data'].push(d);
+                                    ptr += 1;
+                                }
+                            }
+                        }
+    
+                        myChart.setOption(charts_option);
+                        }
+                    });
+                /*
                 $('#hello').click(function(){
                     myChart.setOption(option);
                 });
+                */
                 //myChart.setOption(option);
             });
         </script>
