@@ -8,8 +8,7 @@
     </head>
     <body>
         <div>
-            <div id="testCharts" style="width: 1600px;height:600px;"></div>
-            <h3 id="hello">[Hello]</h3>
+            <div id="testCharts" style="width: 1200px;height:600px;"></div>
         </div>
         <div>
             道路名称
@@ -65,11 +64,11 @@
                         road_list = Object.keys(data_dict[select_date][time_list[0]][vehicle_list[0]]);
     
                         charts_option = {};
-                        //charts_option['title'] = {text: select_date};
+                        charts_option['title'] = {text: select_date};
 
-                        charts_option['tooltip'] = {trigger: 'axis'};
+                        charts_option['tooltip'] = {trigger: 'axis', axisPointer: {type: 'cross', label: {backgroundColor: '#6a7985'}}};
     
-                        charts_option['legend'] = {data:[]};
+                        charts_option['legend'] = {data:road_list};
                         charts_option['dataZoom'] = [{type: 'slider', show: true}, {type: 'inside'}];
     
                         charts_option['xAxis'] = {type:'category', data:time_list};
@@ -77,34 +76,26 @@
     
                         charts_option['series'] = []
                         for (var road_name of road_list) {
-                            var stack_name = null;
-                            for (var vehicle_name of vehicle_list) {
-                                d_name = road_name + ': ' + vehicle_name;
-                                charts_option['legend']['data'].push(d_name)
-                                charts_option['series'].push({name:d_name, type:'bar', data:[], stack: road_name});
-                            }
+                            charts_option['series'].push({name:road_name, type:'line', data:[], stack:'road', areaStyle: {}, smooth: true, symbol: 'none', sampling: 'average'});
                         }
     
                         for (var time of time_list) {
                             var ptr = 0;
                             for (var road of road_list) {
+                                var vehicle_num = 0
                                 for (var vehicle of vehicle_list) {
                                     var d = data_dict[select_date][time][vehicle][road];
-                                    charts_option['series'][ptr]['data'].push(d);
-                                    ptr += 1;
+                                    vehicle_num += d;
                                 }
+                                charts_option['series'][ptr]['data'].push(vehicle_num);
+                                ptr += 1;
                             }
                         }
     
+                        myChart.clear();
                         myChart.setOption(charts_option);
                         }
                     });
-                /*
-                $('#hello').click(function(){
-                    myChart.setOption(option);
-                });
-                */
-                //myChart.setOption(option);
             });
         </script>
 
