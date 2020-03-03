@@ -76,7 +76,7 @@ def frameGen():
 
 @app.route('/')
 def mainWeb():
-    return "<h1>Hello Main</h1>"
+    return render_template('main.html')
 
 # Debug
 @app.route('/change')
@@ -100,6 +100,11 @@ def draw_pic():
 @app.route('/charts')
 def charts():
     return render_template('charts.html')
+
+@app.route('/html/test', methods=['POST'])
+def html_test():
+    return render_template('test.html')
+
 
 @app.route('/post/getTree', methods=['POST'])
 def getTree():
