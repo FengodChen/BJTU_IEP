@@ -1,0 +1,71 @@
+<style>
+    .option {
+        font-family: sans-serif;
+        color: aliceblue;
+        position: absolute;
+        top: 50px;
+        bottom: 0;
+        width: 220px;
+        background-color: #222;
+    }
+    .video_stream{
+        position: absolute;
+        top: 50px;
+        bottom: 0;
+        left: 220px;
+        right: 0;
+        background-color: #444;
+    }
+
+    .video_stream div {
+        position: absolute;
+        left: 10px;
+        right: 10px;
+        top: 10px;
+        bottom: 10px;
+        background-color: #555;
+    }
+
+    .video_frame img {
+        position: absolute;
+        height: 100%;
+        width: 100%;
+    }
+
+</style>
+
+<script>
+    $(document).ready(function(){
+        $("#road_name").keyup(function(){
+            roadkeys = $("#road_name").val();
+            $.post("/post/getMonitorList", 
+            {roadkey:roadkeys}, function(recv){
+                $("#road_tree").html(recv);
+            });
+        });
+
+        $("#change_road").click(function(){
+            road_name = $('#road_name').val();
+            $.post("/post/change", 
+            {road_name:road_name}, function(recv){
+                $('video_main').src = '/video_feed';
+            });
+        });
+    });
+</script>
+
+<div class="option">
+    <p>道路名称：</p>
+    <input id="road_name" type="text" list="road_tree">
+        <datalist id="road_tree"></datalist>
+    </input>
+    <p></p>
+    <button id="change_road"> 选择 </button>
+</div>
+
+<div class="video_stream">
+    <!--img id="video_main" height="300px" width="300px" src="/video_feed"> </img-->
+    <div class="video_frame">
+        <img id="video_main" src="/video_feed"> </img>
+    </div>
+</div>

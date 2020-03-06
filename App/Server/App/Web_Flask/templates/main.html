@@ -40,19 +40,31 @@
     </head>
     <body>
         <div class="topnav">
-            <a href="javascript:void(0)" id="monitor">实时监控</a>
-            <a href="javascript:void(0)">数据统计</a>
-            <a href="javascript:void(0)">车道设置</a>
-            <a href="javascript:void(0)">关于</a>
+            <a href="javascript:void(0)" id="real_monitor">实时监控</a>
+            <a href="javascript:void(0)" id="data_stat">数据统计</a>
+            <a href="javascript:void(0)" id="lane_setting">车道设置</a>
+            <a href="javascript:void(0)" id="about">关于</a>
         </div>
 
-        <div id="test"></div>
+        <div id="body_main"></div>
         <script>
             $(document).ready(function(){
-                $("#monitor").click(function(){
-                    $.post("/html/test", 
-                    {test:0}, function(recv){
-                        $("#test").html(recv);
+                $("#real_monitor").click(function(){
+                    $.post("/html/monitor", 
+                    {useless:0}, function(recv){
+                        $("#body_main").html(recv);
+                    });
+                });
+                $("#data_stat").click(function(){
+                    $.post("/html/charts", 
+                    {useless:0}, function(recv){
+                        $("#body_main").html(recv);
+                    });
+                });
+                $("#lane_setting").click(function(){
+                    $.post("/html/draw", 
+                    {useless:0}, function(recv){
+                        $("#body_main").html(recv);
                     });
                 });
             });

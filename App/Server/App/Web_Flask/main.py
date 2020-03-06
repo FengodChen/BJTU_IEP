@@ -78,36 +78,24 @@ def frameGen():
 def mainWeb():
     return render_template('main.html')
 
-# Debug
-@app.route('/change')
-def change():
-    Send('changeMonitor:TestRoad1')
-    monitorStr = Recv()
-    return monitorStr
-
 @app.route('/searchRoad')
 def searchRoad():
     return render_template('searchRoad.html')
 
-@app.route('/video')
-def videoPage():
-    return render_template('videoLoop.html')
+@app.route('/html/monitor', methods=['POST'])
+def html_monitor():
+    return render_template('html_monitor.html')
 
-@app.route('/draw_pic')
-def draw_pic():
-    return render_template('draw.html')
+@app.route('/html/charts', methods=['POST'])
+def html_charts():
+    return render_template('html_charts.html')
 
-@app.route('/charts')
-def charts():
-    return render_template('charts.html')
-
-@app.route('/html/test', methods=['POST'])
-def html_test():
-    return render_template('test.html')
-
+@app.route('/html/draw', methods=['POST'])
+def html_draw():
+    return render_template('html_draw.html')
 
 @app.route('/post/getTree', methods=['POST'])
-def getTree():
+def post_getTree():
     roadkey = request.form.get("roadkey")
     page = "<option value=\"--\">--</option>"
     treeList = sql_gen.getRoadIndex(roadkey)
@@ -116,7 +104,7 @@ def getTree():
     return page
 
 @app.route('/post/getTimeline', methods=['POST'])
-def getTimeline():
+def post_getTimeline():
     roadname = request.form.get("roadname")
     if roadname == '--':
         return "<p>--</p>"
@@ -128,7 +116,7 @@ def getTimeline():
         return page
 
 @app.route('/post/manualDraw', methods=['POST'])
-def manualDraw():
+def post_manualDraw():
     pointList_json = request.form.get("pointList_json")
     lane = request.form.get("lane")
     # 'manualDraw:<|||||> pointList_json <|||||> lane'
@@ -137,12 +125,12 @@ def manualDraw():
     return 'data:image/jpeg;base64, {}'.format(img_bytes_base64_str)
 
 @app.route('/post/saveDraw', methods=['POST'])
-def saveDraw():
+def post_saveDraw():
     SafeSend("ol:saveLane")
     return ('0')
 
 @app.route('/post/refreshImg', methods=['POST'])
-def refreshImg():
+def post_refreshImg():
     c_w = request.form.get("w")
     c_h = request.form.get("h")
     road = request.form.get("road")
@@ -156,7 +144,7 @@ def refreshImg():
     return 'data:image/jpeg;base64, {}'.format(img_bytes_base64_str)
 
 @app.route('/post/getMonitorList', methods=['POST'])
-def getMonitorList():
+def post_getMonitorList():
     key = request.form.get("roadkey")
     Send('om:getMonitorList')
     monitorStr = Recv()
@@ -168,7 +156,7 @@ def getMonitorList():
     return returnStr
 
 @app.route('/post/getRoadData', methods=['POST'])
-def getRoadData():
+def post_getRoadData():
     info_json = {}
 
     info_json['startDate'] = request.form.get("start_date")
@@ -180,6 +168,13 @@ def getRoadData():
     Send('od:getData:{}'.format(info_json_str))
     data_json_str = Recv()
     return data_json_str
+
+@app.route('/post/change', methods=['POST'])
+def post_change():
+    road_name = request.form.get("road_name")
+    Send('changeMonitor:{}'.format(road_name))
+    monitorStr = Recv()
+    return monitorStr
 
 @app.route('/video_feed')
 def video_feed():
