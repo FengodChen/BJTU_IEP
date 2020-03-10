@@ -209,9 +209,12 @@ class IndexDB:
         for vehicleName in self.vehicleClass:
             roadPtr = 0
             for roadName in self.roadLine:
-                cursors = self.db.execute("SELECT TIME,\"{}\" FROM {};".format(roadName, vehicleName))
+                cursors = self.db.execute("SELECT * FROM {};".format(vehicleName))
                 if (not cursors == None):
-                    for (t, data) in cursors:
+                    #for (t, data) in cursors:
+                    for cursor in cursors:
+                        t = cursor[0]
+                        data = cursor[roadPtr+1]
                         if (not t in dataDict):
                             dataDict[t] = {}
                         if (not vehicleName in dataDict[t]):

@@ -28,7 +28,7 @@
     <input id="start_date" type="date" />
     <p>结束时间：</p>
     <input id="end_date" type="date" />
-    <button id="get_road_data">获取列表</button>
+    <!--button id="get_road_data">获取列表</button-->
     <button id="data_by_date">按日期</button>
     <p>日期：</p>
     <input id="data_select_date" type="date" />
@@ -38,11 +38,11 @@
 <div id="dataCharts" class="data_charts"></div>
 
 <script>
-    var data_dict;
     //var charts_option = {};
 // 使用刚指定的配置项和数据显示图表。
     $(document).ready(function(){
         var myChart = echarts.init($('#dataCharts').get(0));
+        /*
         $("#get_road_data").click(function() {
             start_date = $("#start_date").val();
             end_date = $("#end_date").val();
@@ -54,6 +54,7 @@
                 alert("OK!");
             });
         });
+        */
 
         $("#road_name").keyup(function(){
             roadkeys = $("#road_name").val();
@@ -63,48 +64,114 @@
             });
         });
 
-        $('#data_by_time').click(function(){
-            select_date = $("#data_select_date").val();
-            if (!(select_date in data_dict)) {
-                alert("Not Such date");
-            } else {
+        $('#data_by_date').click(function(){
+            var data_dict;
+            start_date = $("#start_date").val();
+            end_date = $("#end_date").val();
+            road_name = $("#road_name").val();
+            $.post("/post/getRoadData",
+            {start_date:start_date, end_date:end_date, road_name:road_name}, function(recv){
+                data_dict = JSON.parse(recv);
+                console.log(data_dict);
+                var date_list = Object.keys(data_dict);
+                if (date_list.length == 0) {
+                    alert("No data in this date range!");
+                } else {
+                    var charts_title = start_date + " to " + end_date;
+                    var road_list = Object.keys(data_dict[date_list[0]][Object.keys(data_dict[date_list[0]])[0]][Object.keys(data_dict[date_list[0]][Object.keys(data_dict[date_list[0]])[0]])[0]]);
 
-                time_list = Object.keys(data_dict[select_date]);
-                vehicle_list = Object.keys(data_dict[select_date][time_list[0]]);
-                road_list = Object.keys(data_dict[select_date][time_list[0]][vehicle_list[0]]);
+                    var charts_option = {};
+                    charts_option['title'] = {text: charts_title};
 
-                charts_option = {};
-                charts_option['title'] = {text: select_date};
+                    charts_option['tooltip'] = {trigger: 'axis', axisPointer: {type: 'cross', label: {backgroundColor: '#6a7985'}}};
 
-                charts_option['tooltip'] = {trigger: 'axis', axisPointer: {type: 'cross', label: {backgroundColor: '#6a7985'}}};
+                    charts_option['legend'] = {data:road_list};
+                    charts_option['dataZoom'] = [{type: 'slider', show: true}, {type: 'inside'}];
 
-                charts_option['legend'] = {data:road_list};
-                charts_option['dataZoom'] = [{type: 'slider', show: true}, {type: 'inside'}];
+                    charts_option['xAxis'] = {type:'category', data:date_list};
+                    charts_option['yAxis'] = {type:'value'};
 
-                charts_option['xAxis'] = {type:'category', data:time_list};
-                charts_option['yAxis'] = {type:'value'};
-
-                charts_option['series'] = []
-                for (var road_name of road_list) {
-                    charts_option['series'].push({name:road_name, type:'line', data:[], stack:'road', areaStyle: {}, smooth: true, symbol: 'none', sampling: 'average'});
-                }
-
-                for (var time of time_list) {
-                    var ptr = 0;
-                    for (var road of road_list) {
-                        var vehicle_num = 0
-                        for (var vehicle of vehicle_list) {
-                            var d = data_dict[select_date][time][vehicle][road];
-                            vehicle_num += d;
-                        }
-                        charts_option['series'][ptr]['data'].push(vehicle_num);
-                        ptr += 1;
+                    charts_option['series'] = []
+                    for (var road_name of road_list) {
+                        charts_option['series'].push({name:road_name, type:'line', data:[], stack:'road', areaStyle: {}, smooth: true, symbol: 'none', sampling: 'average'});
                     }
-                }
 
-                myChart.clear();
-                myChart.setOption(charts_option);
+                    for (select_date in data_dict) {
+    
+                        time_list = Object.keys(data_dict[select_date]);
+                        vehicle_list = Object.keys(data_dict[select_date][time_list[0]]);
+                        road_list = Object.keys(data_dict[select_date][time_list[0]][vehicle_list[0]]);
+    
+    
+                        var ptr = 0;
+                        for (var road of road_list) {
+                            var vehicle_num = 0
+                            for (var vehicle of vehicle_list) {
+                                for (var time of time_list) {
+                                    var d = data_dict[select_date][time][vehicle][road];
+                                    vehicle_num += d;
+                                }
+                            } 
+                            charts_option['series'][ptr]['data'].push(vehicle_num);
+                            ptr += 1;
+                        }
+                    }
+                    myChart.clear();
+                    myChart.setOption(charts_option);
                 }
             });
+        });
+
+        $('#data_by_time').click(function(){
+            var data_dict;
+            start_date = $("#data_select_date").val();
+            end_date = $("#data_select_date").val();
+            road_name = $("#road_name").val();
+            $.post("/post/getRoadData",
+            {start_date:start_date, end_date:end_date, road_name:road_name}, function(recv){
+                data_dict = JSON.parse(recv);
+                select_date = $("#data_select_date").val();
+                if (!(select_date in data_dict)) {
+                    alert("Not Such date");
+                } else {
+    
+                    time_list = Object.keys(data_dict[select_date]);
+                    vehicle_list = Object.keys(data_dict[select_date][time_list[0]]);
+                    road_list = Object.keys(data_dict[select_date][time_list[0]][vehicle_list[0]]);
+    
+                    charts_option = {};
+                    charts_option['title'] = {text: select_date};
+    
+                    charts_option['tooltip'] = {trigger: 'axis', axisPointer: {type: 'cross', label: {backgroundColor: '#6a7985'}}};
+    
+                    charts_option['legend'] = {data:road_list};
+                    charts_option['dataZoom'] = [{type: 'slider', show: true}, {type: 'inside'}];
+    
+                    charts_option['xAxis'] = {type:'category', data:time_list};
+                    charts_option['yAxis'] = {type:'value'};
+    
+                    charts_option['series'] = []
+                    for (var road_name of road_list) {
+                        charts_option['series'].push({name:road_name, type:'line', data:[], stack:'road', areaStyle: {}, smooth: true, symbol: 'none', sampling: 'average'});
+                    }
+    
+                    for (var time of time_list) {
+                        var ptr = 0;
+                        for (var road of road_list) {
+                            var vehicle_num = 0
+                            for (var vehicle of vehicle_list) {
+                                var d = data_dict[select_date][time][vehicle][road];
+                                vehicle_num += d;
+                            }
+                            charts_option['series'][ptr]['data'].push(vehicle_num);
+                            ptr += 1;
+                        }
+                    }
+    
+                    myChart.clear();
+                    myChart.setOption(charts_option);
+                }
+            });
+        });
     });
 </script>

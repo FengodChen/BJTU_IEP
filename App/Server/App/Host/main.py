@@ -188,6 +188,15 @@ class OperateData_Thread(threading.Thread):
                 endDate = info_json["endDate"]
                 dataDict = self.gen.getData_DateRange_Unique(roadName, startDate, endDate)
                 dataDict_json = json.dumps(dataDict)
+
+                '''
+                # Debug
+                f = open("/Share/test.txt", "w")
+                f.write(str(dataDict))
+                f.write(dataDict_json)
+                f.close()
+                '''
+
                 self.insertAns(dataDict_json, key)
 
     def insertOrder(self, order:str, key:int):

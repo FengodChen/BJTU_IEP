@@ -152,7 +152,6 @@ class Vehicle_Generator:
         dateList = getDateRange(startDate, endDate)
         for date in dateList:
             if (self.initData(roadName, date)):
-                print("[Operating] Date: {}".format(date))
                 try:
                     sum_dict[date] = self.getData_Unique(roadName, date)
                 except:
