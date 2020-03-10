@@ -66,22 +66,25 @@
 
         $('#data_by_date').click(function(){
             var data_dict;
+            myChart.showLoading({
+                text:'加载中，耐心等待哦～',
+                color:'#3385ff',
+            });
             start_date = $("#start_date").val();
             end_date = $("#end_date").val();
             road_name = $("#road_name").val();
             $.post("/post/getRoadData",
             {start_date:start_date, end_date:end_date, road_name:road_name}, function(recv){
                 data_dict = JSON.parse(recv);
-                console.log(data_dict);
                 var date_list = Object.keys(data_dict);
                 if (date_list.length == 0) {
                     alert("No data in this date range!");
                 } else {
-                    var charts_title = start_date + " to " + end_date;
+                    //var charts_title = start_date + " to " + end_date;
                     var road_list = Object.keys(data_dict[date_list[0]][Object.keys(data_dict[date_list[0]])[0]][Object.keys(data_dict[date_list[0]][Object.keys(data_dict[date_list[0]])[0]])[0]]);
 
                     var charts_option = {};
-                    charts_option['title'] = {text: charts_title};
+                    //charts_option['title'] = {text: charts_title};
 
                     charts_option['tooltip'] = {trigger: 'axis', axisPointer: {type: 'cross', label: {backgroundColor: '#6a7985'}}};
 
@@ -112,11 +115,14 @@
                                     vehicle_num += d;
                                 }
                             } 
+                            console.log(ptr);
+                            console.log(charts_option);
                             charts_option['series'][ptr]['data'].push(vehicle_num);
                             ptr += 1;
                         }
                     }
                     myChart.clear();
+                    myChart.hideLoading();
                     myChart.setOption(charts_option);
                 }
             });
@@ -124,6 +130,10 @@
 
         $('#data_by_time').click(function(){
             var data_dict;
+            myChart.showLoading({
+                text:'加载中，耐心等待哦～',
+                color:'#3385ff',
+            });
             start_date = $("#data_select_date").val();
             end_date = $("#data_select_date").val();
             road_name = $("#road_name").val();
@@ -140,7 +150,7 @@
                     road_list = Object.keys(data_dict[select_date][time_list[0]][vehicle_list[0]]);
     
                     charts_option = {};
-                    charts_option['title'] = {text: select_date};
+                    //charts_option['title'] = {text: select_date};
     
                     charts_option['tooltip'] = {trigger: 'axis', axisPointer: {type: 'cross', label: {backgroundColor: '#6a7985'}}};
     
@@ -169,6 +179,7 @@
                     }
     
                     myChart.clear();
+                    myChart.hideLoading();
                     myChart.setOption(charts_option);
                 }
             });

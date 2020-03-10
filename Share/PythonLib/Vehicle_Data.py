@@ -207,18 +207,18 @@ class IndexDB:
 
         vehiclePtr = 0
         for vehicleName in self.vehicleClass:
-            roadPtr = 0
+            roadPtr = 1
             for roadName in self.roadLine:
                 cursors = self.db.execute("SELECT * FROM {};".format(vehicleName))
                 if (not cursors == None):
                     #for (t, data) in cursors:
                     for cursor in cursors:
                         t = cursor[0]
-                        data = cursor[roadPtr+1]
+                        data = cursor[roadPtr]
                         if (not t in dataDict):
                             dataDict[t] = {}
                         if (not vehicleName in dataDict[t]):
                             dataDict[t][vehicleName] = {}
                         dataDict[t][vehicleName][roadName] = data
-
+                roadPtr += 1
         return dataDict
