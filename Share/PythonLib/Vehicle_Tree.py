@@ -2,6 +2,7 @@ import time
 import hashlib
 import sqlite3
 import os
+import shutil
 
 def str2sha256(s):
     '''
@@ -72,3 +73,26 @@ class TreeDB:
             return True
         except:
             return False
+    
+    def removeDate(self, roadName, date, commit=True):
+        if (self.hasRoad(roadName)):
+            try:
+                cursors = self.db.execute("SELECT FILENAME FROM {} WHERE DATE IS \"{}\";".format(roadName, date)).fetchone()
+                filename = cursors[0]
+                shutil.rmtree("{}/{}".format(self.treePath, filename))
+                self.db.execute("DELETE FROM \'{}\' WHERE DATE IS \'{}\';".format(roadName, date))
+                if (commit):
+                    self.db.commit()
+                return True
+            except Exception as e:
+                print(e)
+                return False
+        return False
+    
+    def removeRoad(self, roadName):
+        if (self.hasRoad(roadName)):
+            cursors = self.db.execute('SELECT * FROM \'{}\';'.format(roadName))
+            for (date, filename) in cursors:
+                self.removeDate(roadName, date, commit=False)
+            self.db.execute('DROP TABLE \'{}\';'.format(roadName))
+            self.db.commit()
