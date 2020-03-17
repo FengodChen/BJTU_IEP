@@ -96,7 +96,7 @@ class GetLaneStatisticThread(threading.Thread):
             self.sleepingFlag = True
             time.sleep(sleep_seconds)
             while (self.updatingFlag):
-                time,sleep(0.1)
+                time.sleep(0.1)
             self.sleepingFlag = False
 
             startTime = time.time()
@@ -222,8 +222,8 @@ class ServerThread(threading.Thread):
                 # TODO
                 [title, size, img_bytes_base64_str, roadName] = rec.split("<|||||>")
                 (w, h) = size.split("x")
-                w = int(w)
-                h = int(h)
+                w = int(float(w))
+                h = int(float(h))
                 mg = HeatMap.ManualGetLane(roadName, img_bytes_base64_str, w, h)
                 while (True):
                     rec = self.cor.receive()
@@ -238,8 +238,8 @@ class ServerThread(threading.Thread):
                     elif ('newDraw:' in rec):
                         [title, size, img_bytes_base64_str, roadName] = rec.split("<|||||>")
                         (w, h) = size.split("x")
-                        w = int(w)
-                        h = int(h)
+                        w = int(float(w))
+                        h = int(float(h))
                         mg = HeatMap.ManualGetLane(roadName, img_bytes_base64_str, w, h)
 
 if __name__ == "__main__":

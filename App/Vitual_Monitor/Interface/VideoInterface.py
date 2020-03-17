@@ -35,18 +35,23 @@ class VideoOperator:
             del(self.frame_num[road_name])
             return False
 
-        self.frame_rate[road_name] = video.get(cv.CAP_PROP_FPS)
-        self.frame_time[road_name] = self.frame_num[road_name] / self.frame_rate[road_name]
-
         self.video_base64[road_name] = []
 
         logger.info("Loading Video")
+        counter = 0
         for tmp in range(self.frame_num[road_name]):
-            (ret, frame) = video.read()
-            (is_succ, img_jpg) = cv.imencode(".jpg", frame)
-            jpg_bin = img_jpg.tobytes()
-            jpg_base64 = base64.encodebytes(jpg_bin)
-            self.video_base64[road_name].append(jpg_base64)
+            try:
+                (ret, frame) = video.read()
+                (is_succ, img_jpg) = cv.imencode(".jpg", frame)
+                jpg_bin = img_jpg.tobytes()
+                jpg_base64 = base64.encodebytes(jpg_bin)
+                self.video_base64[road_name].append(jpg_base64)
+                counter += 1
+            except:
+                self.frame_num[road_name] = counter
+                break
+        self.frame_rate[road_name] = video.get(cv.CAP_PROP_FPS)
+        self.frame_time[road_name] = self.frame_num[road_name] / self.frame_rate[road_name]
         logger.info("Loaded")
 
         video.release()
