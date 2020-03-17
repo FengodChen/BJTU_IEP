@@ -1,3 +1,5 @@
+from random import randint
+
 import numpy as np
 import sqlite3
 import cv2 as cv
@@ -63,19 +65,31 @@ class ManualGetLane:
         self.lanelist = ""
         self.lanedict = {}
 
+        self.randomRGBList = []
+
         self.dt_show = dt_show
+        self.color_level_each = int(255 / dt_show)
         self.level = 0
+    
+    def getRandomRGB(self):
+        while True:
+            r = int(randint(0, self.color_level_each) * self.dt_show)
+            g = int(randint(0, self.color_level_each) * self.dt_show)
+            b = int(randint(0, self.color_level_each) * self.dt_show)
+            if (not (r, g, b) in self.randomRGBList):
+                self.randomRGBList.append((r, g, b))
+                return (r, g, b)
 
     def drawMask(self, pointList:list) -> str:
         pointlist = []
         for point in pointList:
             pointlist.append([point['x'], point['y']])
         tri = np.array([pointlist], dtype=np.int32)
-        deep = self.dt_show * self.level
-        cv.fillPoly(self.img_mask, tri, (deep) * 3)
+        cv.fillPoly(self.img_mask, tri, self.getRandomRGB())
         cv.fillPoly(self.img_flag, tri, self.level)
+        img_mix = cv.addWeighted(self.img_orgi, 0.3, self.img_mask, 0.7, 0)
 
-        (is_succ, img_bytes) = cv.imencode(".jpg", self.img_mask)
+        (is_succ, img_bytes) = cv.imencode(".jpg", img_mix)
         img_bytes_base64_bytes = base64.encodebytes(img_bytes.tobytes())
         img_bytes_base64_str = str(img_bytes_base64_bytes, encoding='utf-8')
 

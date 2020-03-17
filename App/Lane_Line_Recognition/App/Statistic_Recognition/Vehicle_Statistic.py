@@ -219,7 +219,6 @@ class ServerThread(threading.Thread):
         while (True):
             rec = self.cor.receive()
             if ('newDraw:' in rec):
-                # TODO
                 [title, size, img_bytes_base64_str, roadName] = rec.split("<|||||>")
                 (w, h) = size.split("x")
                 w = int(float(w))
@@ -235,6 +234,7 @@ class ServerThread(threading.Thread):
                         self.cor.send("{}".format(img_bytes_base64_str))
                     elif ("saveLane" == rec):
                         mg.save(self.laneDB_path)
+                        break
                     elif ('newDraw:' in rec):
                         [title, size, img_bytes_base64_str, roadName] = rec.split("<|||||>")
                         (w, h) = size.split("x")

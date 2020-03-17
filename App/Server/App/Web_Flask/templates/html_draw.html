@@ -39,18 +39,17 @@
     <input type="text" list="roadans" id="roadkeys">
         <datalist id="roadans"></datalist>
     </input>
+    <button id="refresh"> 载入此路段 </button>
     <p>操作台</p>
     <input type="text" list="road_selection" id="road_function" >
         <datalist id="road_selection">
-            <option value="Turn Left"> Turn Left </option>
-            <option value="Turn Right"> Turn Right </option>
-            <option value="Ahead"> Ahead </option>
+            <option value="左转车道">  </option>
+            <option value="右转车道">  </option>
+            <option value="直行车道">  </option>
         </datalist>
     </input>
-    <button id="add_lane"> Add Lane </button>
-    <button id="refresh"> Refresh </button>
-    <button id="draw"> Draw </button>
-    <button id="save"> Save </button>
+    <button id="add_lane"> 确认车道 </button>
+    <button id="save"> 确认并保存 </button>
 </div>
 <div class="drawer">
     <div class="drawer_pannel">
@@ -80,6 +79,12 @@
         var abs_x = canvas.offset().left;
 
         var mouseFlag = false;
+
+        roadImg.onload = function() {
+            var c_h = canvas.height();
+            var c_w = canvas.width();
+            context.drawImage(roadImg, 0, 0, c_w, c_h);
+        }
 
         //canvas.click(function(e){
         $("#drawCanvas").click(function(e){
@@ -124,7 +129,6 @@
             $.post("/post/refreshImg",
             {w:c_w, h:c_h, road:road}, function(recv){
                 roadImg.src = recv;
-                //context.drawImage(roadImg, 0, 0, c_w, c_h);
                 mouseFlag = false
                 pointList = new Array();
             });
@@ -136,12 +140,6 @@
                 mouseFlag = false
                 pointList = new Array();
             });
-        });
-
-        $("#draw").click(function() {
-            var c_h = canvas.height();
-            var c_w = canvas.width();
-            context.drawImage(roadImg, 0, 0, c_w, c_h);
         });
 
         $("#roadkeys").keyup(function(){
