@@ -48,11 +48,10 @@ function restart() {
 }
 
 function install() {
-        docker network create -d bridge ${DOCKER_BRIDGE}
-        docker build -t ${SEED_DOCKER_NAME}:${SEED_DOCKER_VERSION} ${SMR_PATH}/Docker/ --rm
-    if [ "$1" = "-s" ]; then
-        install_soft
-    elif [ "$1" = "-v" ]; then
+    docker network create -d bridge ${DOCKER_BRIDGE}
+    docker build -t ${SEED_DOCKER_NAME}:${SEED_DOCKER_VERSION} ${SMR_PATH}/Docker/ --rm
+    install_soft
+    if [ "$1" = "-v" ]; then
         install_vitual_monitor
     fi
 }
@@ -98,12 +97,11 @@ function uninstall() {
         uninstall_soft
     elif [ "$1" = "-v" ]; then
         uninstall_vitual_monitor
-    else
-        docker network rm ${DOCKER_BRIDGE}
-        uninstall_soft
-        uninstall_vitual_monitor
-        docker image rm ${SEED_DOCKER_NAME}:${SEED_DOCKER_VERSION}
     fi
+    docker network rm ${DOCKER_BRIDGE}
+    uninstall_soft
+    uninstall_vitual_monitor
+    docker image rm ${SEED_DOCKER_NAME}:${SEED_DOCKER_VERSION}
 }
 
 function uninstall_soft() {
