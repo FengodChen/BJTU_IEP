@@ -47,7 +47,7 @@
 启动程序
 ```shell
 ./run start
-./run install -v
+./run start -v
 ```
 
 停止程序
@@ -63,10 +63,23 @@
 
 卸载程序
 ```shell
-或
+./run uninstall
 ./run uninstall -v
 ```
 帮助
 ```shell
 ./run help
 ```
+
+### GUI界面
+#### 前置条件
+在执行启动命令
+```bash
+./run start
+或
+./run start -v
+```
+之后，即可通过网页启动，为了安全，默认仅通过本地地址[http://127.0.0.1:10/]()启动，若需要通过外网访问，请修改run文件里的配置
+#### 打开GUI界面
+使用任意浏览器（推荐使用Google Chrome）打开[http://127.0.0.1:10/]()进入客户端
+![avatar](md_images/home.png)
