@@ -156,5 +156,62 @@ SQLite是一种非常小型的数据库，我们将所有识别到的数据文�
 ECharts，一个使用 JavaScript 实现的开源可视化库，可以流畅的运行在 PC 和移动设备上，兼容当前绝大部分浏览器（IE8/9/10/11，Chrome，Firefox，Safari等），底层依赖矢量图形库 ZRender，提供直观，交互丰富，可高度个性化定制的数据可视化图表。我们通过Echart来展示处理得到的统计结果，展示效果非常好。
 
 ## 程序结构
-
+- App（存放应用的文件夹，Docker容器会挂着该目录下相应的应用）
+    - Lane_Line_Recognition（线条检测程序）
+        - App（存放程序）
+            - Hough（已弃用）
+            - Statistic_Recognition（统计、检测程序）
+                - HeatMap.py（显示检测热力图，用于Debug）
+                - Recognition.py（暂时无用）
+                - Vehicle_Statistic.py（感知web端的区域设置并处理动作）
+        - docker（存放Dockerfile）
+    - Server（服务器程序）
+        - App（存放程序）
+            - Data_Operator（生成虚拟数据的程序）
+                - debug.py（测试用）
+                - getRandomData.py（生成随机数据）
+                - main.py（调用生成随机数据程序并将数据存入数据库中）
+            - Host（数据及线程调度程序，是Web服务器和后端的桥梁）
+                - Connection.py（定义Socket连接程序）
+                - main.py（连接服务器与各程序，并对线程统一调度）
+            - Web_Flask（Flask程序，Web应用框架）
+                - static（存放各自web端静态文件）
+                - templates（存放flask模板文件）
+                - WebLib（需要调用的函数库）
+                    - __init__.py（Python函数库定义）
+                    - socketConnect.py（定义传送以及编解码方式）
+                    - sqliteData.py（定义数据库存储方式）
+                - main.py（Flask主函数）
+                - main.wsgi（WSGI文件）
+            - WebSocket_Operator（已弃用）
+        - docker（存放Dockerfile）
+    - Vehicle_Identification（物体识别程序）
+        - YOLOv3（基于官方的darknet框架YOLO算法）
+            - Makefile（修改自官方，并能编译出需要的so文件）
+        - docker（存放Dockerfile）
+    - Vitual_Monitor（虚拟摄像头程序）
+        - Interface（程序主体）
+            -VideoInterface（主函数）
+        - docker（存放Dockerfile）
+    - Docker（主镜像Dockerfile）
+    - md_images（Markdown文件图片）
+    - Share（所有应用共享库以及数据库）
+        - Images（摄像头存储的帧画面）
+        - laneline_data（区域划分存储数据库）
+        - Log（日志文件）
+        - Main_Data（统计数据）
+            - tree.db（存放所有统计的目录数据库）
+        - PythonLib（所有应用所需Python库）
+            - Local_Socket_Config.py（记录所有Host以及端口）
+            - Local_Socket.py（定义socket传输协议以及规则）
+            - Log.py（日志存储函数）
+            - Numpy_String.py（Numpy数组和字符串之间转换）
+            - SQLiteOperator.py（SQLite操作函数）
+            - Vehicle_Data（读写统计数据库文件类）
+            - Vehicle_Generator（高级读写统计数据库文件类）
+            - Vehicle_Tree（读写目录数据库类）
+        - vehicle_data（存储识别结果临时文件）
+        - Vitual_Monitor_Video（虚拟摄像头视频文件）
+    - config（Docker配置文件）
+    - run（项目总控制命令）
 ## 工作原理
