@@ -178,7 +178,7 @@ ECharts，一个使用 JavaScript 实现的开源可视化库，可以流畅的�
                 - static（存放各自web端静态文件）
                 - templates（存放flask模板文件）
                 - WebLib（需要调用的函数库）
-                    - __init__.py（Python函数库定义）
+                    - \_\_init\_\_.py（Python函数库定义）
                     - socketConnect.py（定义传送以及编解码方式）
                     - sqliteData.py（定义数据库存储方式）
                 - main.py（Flask主函数）
@@ -215,3 +215,19 @@ ECharts，一个使用 JavaScript 实现的开源可视化库，可以流畅的�
     - config（Docker配置文件）
     - run（项目总控制命令）
 ## 工作原理
+在执行完
+```shell
+./run start -v # 使用虚拟监控摄像头
+```
+后，Lane_Line_Recognition、Server、Vehicle_Identification以及Vitual_Monitor启动，启动后它们将自动通过Socket连接需要连接的应用和服务。随后各个应用的状态如下：
+### Server
+该应用包含Apache服务器以及线程调度程序，在访问网页时，Apache服务器将为其分配一个进程运行Flask Web程序。当用户在网页的操作中有需要其他应用的支持时，Apache服务器将请求发送给线程调度程序，线程调度程序按时间将其放入等待队列中并为其分配一个ID。当应用执行完这一请求时，线程调度程序根据ID返回给Apache结果，Apache服务器将该结果返回给相应的用户，如此便完成了一次前后端的交互。
+### Lane_Line_Recognition
+该应用将一直等待，直至线程调度程序向其发送请求。其任务有两个，一是记录各个区域的功能及坐标至缓存区并返回渲染好的图像，二是将所有的记录保存至数据库文件并清空缓存区。
+
+当获取到“记录”的指令时，其将功能和坐标绑定并存储到缓存区，并根据坐标调用OpenCV函数绘制出此封闭区域（绘画颜色随机并且不会重复）并将绘画好的图像返回给线程调度程序。Server获得绘制好的图像并用其覆盖canvas层。
+
+当获取到“保存”的指令时，其将缓存区的保存记录保存到数据库文件，清空缓存区，并等待下次“记录指令”。
+
+### Vehicle_Identification
+其取监控摄像头的可用地区和有区域分割数据记录的地区两者的交集并为其排列。Yolo识别程序识别排列中的地区得到各个物体的名称以及坐标并保存至识别结果临时文件
